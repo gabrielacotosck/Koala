@@ -10,7 +10,8 @@
   h1 { font-size: 20px; font-weight: 600; margin-bottom: 2px; }
   .subtitle { font-size: 13px; color: #666; margin-bottom: 1.25rem; }
   .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; align-items: center; }
-  button { padding: 9px 16px; border-radius: 10px; border: 1px solid #ccc; background: #fff; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; -webkit-tap-highlight-color: transparent; }
+  button { padding: 9px 16px; border-radius: 10px; border: 1px solid #ccc; background: #fff; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; -webkit-tap-highlight-color: transparent; transition: background 0.1s; }
+  button:hover { background: #f5f5f5; }
   button:active { background: #eee; }
   button.loop-on { background: #e8f0fe; border-color: #4285f4; color: #1a73e8; }
   .tempo-wrap { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 4px; }
@@ -40,6 +41,7 @@
   <button onclick="playAll()">▶ Play all</button>
   <button id="btn-loop" onclick="toggleLoop()">⟳ Loop phrase</button>
   <button onclick="stopAll()">■ Stop</button>
+  <button onclick="testAudio()">🔊 Test Audio</button>
   <div class="tempo-wrap">
     <label>Tempo</label>
     <input type="range" min="40" max="120" value="72" step="1" id="tempo-slider" oninput="updateTempo(this.value)">
@@ -67,7 +69,9 @@ let stopFlag = false;
 
 function getCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(err => console.log('AudioContext resume failed:', err));
+  }
   return audioCtx;
 }
 
@@ -201,6 +205,7 @@ async function playNotes(notes, onProg) {
 }
 
 async function playPhrase(i) {
+  const ctx = getCtx();
   stopFlag = true;
   await sleep(60);
   stopFlag = false;
@@ -216,6 +221,7 @@ async function playPhrase(i) {
 }
 
 async function playAll() {
+  const ctx = getCtx();
   stopFlag = true; await sleep(60); stopFlag = false;
   isLooping = false;
   document.getElementById('btn-loop').classList.remove('loop-on');
@@ -238,6 +244,20 @@ function toggleLoop() {
 }
 
 function updateTempo(v) { BPM = parseInt(v); document.getElementById('tempo-val').textContent = '♩= ' + BPM; }
+
+function testAudio() {
+  const ctx = getCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.frequency.value = 440;
+  gain.gain.setValueAtTime(0.3, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.5);
+  setStatus('Test tone playing... (you should hear a short beep)');
+}
 
 render();
 </script>
