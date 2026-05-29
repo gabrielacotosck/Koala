@@ -10,8 +10,7 @@
   h1 { font-size: 20px; font-weight: 600; margin-bottom: 2px; }
   .subtitle { font-size: 13px; color: #666; margin-bottom: 1.25rem; }
   .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; align-items: center; }
-  button { padding: 9px 16px; border-radius: 10px; border: 1px solid #ccc; background: #fff; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; -webkit-tap-highlight-color: transparent; transition: background 0.1s; }
-  button:hover { background: #f5f5f5; }
+  button { padding: 9px 16px; border-radius: 10px; border: 1px solid #ccc; background: #fff; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; -webkit-tap-highlight-color: transparent; }
   button:active { background: #eee; }
   button.loop-on { background: #e8f0fe; border-color: #4285f4; color: #1a73e8; }
   .tempo-wrap { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 4px; }
@@ -19,7 +18,7 @@
   .tempo-wrap input[type=range] { flex: 1; height: 4px; accent-color: #4285f4; }
   .tempo-val { font-size: 13px; font-weight: 600; min-width: 52px; }
   .phrase-list { display: flex; flex-direction: column; gap: 8px; }
-  .phrase { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 12px 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.1s; }
+  .phrase { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 12px 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .phrase:active { background: #f0f0f0; }
   .phrase.playing { border-color: #4285f4; background: #e8f0fe; }
   .phrase-row { display: flex; align-items: center; gap: 10px; }
@@ -41,7 +40,6 @@
   <button onclick="playAll()">▶ Play all</button>
   <button id="btn-loop" onclick="toggleLoop()">⟳ Loop phrase</button>
   <button onclick="stopAll()">■ Stop</button>
-  <button onclick="testAudio()">🔊 Test Audio</button>
   <div class="tempo-wrap">
     <label>Tempo</label>
     <input type="range" min="40" max="120" value="72" step="1" id="tempo-slider" oninput="updateTempo(this.value)">
@@ -54,13 +52,318 @@
 <div class="phrase-list" id="phrase-list"></div>
 
 <script>
+// Frequencies for every note used
 const NOTE = {
-  'C3':130.81,'D3':146.83,'E3':164.81,'F3':174.61,'G3':196.00,'A3':220.00,'B3':246.94,
-  'C4':261.63,'D4':293.66,'E4':329.63,'F4':349.23,'F#4':369.99,'G4':392.00,'A4':440.00,
-  'Bb4':466.16,'B4':493.88,'C5':523.25,'D5':587.33,'E5':659.25,'F5':698.46,
-  'F#5':739.99,'G5':783.99,'A5':880.00,'B5':987.77,
-  'C#4':277.18,'C#5':554.37,'D#4':311.13,'G#4':415.30,'G#5':830.61,'F4':349.23
+  'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13,
+  'E4': 329.63, 'F4': 349.23, 'F#4': 369.99, 'G4': 392.00,
+  'G#4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'B4': 493.88,
+  'C5': 523.25, 'C#5': 554.37, 'D5': 587.33, 'D#5': 622.25,
+  'E5': 659.25, 'F5': 698.46, 'F#5': 739.99, 'G5': 783.99,
+  'B3': 246.94, 'A3': 220.00, 'G3': 196.00
 };
+
+// Notes encoded as [pitch, beats] where 1 beat = 1 quarter note
+// Key: G major (F# throughout). Time: 3/4.
+// Dotted half = 3, half = 2, dotted quarter = 1.5, quarter = 1, eighth = 0.5
+
+const phrases = [
+  {
+    name: 'Bars 1–4: Opening (doo doo)',
+    lyric: 'doo  doo',
+    notes: [
+      // Bar 1: dotted quarter D4, eighth E4, quarter F#4
+      ['D4',1.5],['E4',0.5],['F#4',1],
+      // Bar 2: dotted quarter G4, eighth A4, quarter G4
+      ['G4',1.5],['A4',0.5],['G4',1],
+      // Bar 3: quarter F#4, quarter E4, quarter D4
+      ['F#4',1],['E4',1],['D4',1],
+      // Bar 4: dotted half A4
+      ['A4',3]
+    ]
+  },
+  {
+    name: 'Bars 5–9: Long held notes',
+    lyric: '(sustained opening)',
+    notes: [
+      ['G4',3],  // bar 5
+      ['F#4',3], // bar 6
+      ['E4',3],  // bar 7
+      ['D4',3],  // bar 8
+      // bar 9 pickup: eighth rest then eighth D4, quarter E4
+      ['D4',0.5],['E4',1]
+    ]
+  },
+  {
+    name: 'Bars 9–13: Are you going to Scarborough Fair?',
+    lyric: 'Are you go-ing to Scar-bo-rough fair',
+    notes: [
+      // bar 9 cont: already used pickup above; full bar here
+      // bar 10: D4 dotted quarter, E4 eighth, F#4 quarter
+      ['D4',1.5],['E4',0.5],['F#4',1],
+      // bar 11: G4 half, A4 quarter
+      ['G4',2],['A4',1],
+      // bar 12: B4 dotted half
+      ['B4',3],
+      // bar 13: A4 dotted half
+      ['A4',3]
+    ]
+  },
+  {
+    name: 'Bars 14–17: Parsley sage rosemary and thyme (1st)',
+    lyric: 'Pars-ley sage, rose-ma-ry and thyme',
+    notes: [
+      // bar 14 pickup: eighth rest, eighth D4
+      ['D4',0.5],
+      // bar 15: E4 dotted quarter, F#4 eighth, G4 quarter
+      ['E4',1.5],['F#4',0.5],['G4',1],
+      // bar 16: A4 dotted half
+      ['A4',3],
+      // bar 17: G4 half, F#4 quarter
+      ['G4',2],['F#4',1]
+    ]
+  },
+  {
+    name: 'Bars 17–20: …rosemary and thyme (continued)',
+    lyric: 'rose-ma-ry and thyme',
+    notes: [
+      // bar 18: E4 quarter, D4 half
+      ['E4',1],['D4',2],
+      // bar 19: pickup eighth rest, eighth D4
+      ['D4',0.5],
+      // bar 20: E4 dotted quarter, F#4 eighth, G4 quarter
+      ['E4',1.5],['F#4',0.5],['G4',1]
+    ]
+  },
+  {
+    name: 'Bars 20–24: Remember me to the one who lives there',
+    lyric: 'Re-mem-ber me to the one who lives there',
+    notes: [
+      // bar 21: A4 half, G4 quarter
+      ['A4',2],['G4',1],
+      // bar 22: F#4 quarter, E4 half
+      ['F#4',1],['E4',2],
+      // bar 23: quarter D4, quarter E4, quarter F#4 (tied into bar 24)
+      ['D4',1],['E4',1],['F#4',1],
+      // bar 24: F#4 half (tied), E4 quarter
+      ['F#4',2],['E4',1]
+    ]
+  },
+  {
+    name: 'Bars 25–29: She once was a true love of',
+    lyric: 'She once was a true love of',
+    notes: [
+      // bar 25: pickup eighth rest, eighth D4
+      ['D4',0.5],
+      // bar 26: E4 quarter, F#4 quarter, G4 quarter
+      ['E4',1],['F#4',1],['G4',1],
+      // bar 27: A4 dotted half
+      ['A4',3],
+      // bar 28: G4 half, F#4 quarter
+      ['G4',2],['F#4',1],
+      // bar 29: E4 quarter, D4 half
+      ['E4',1],['D4',2]
+    ]
+  },
+  {
+    name: 'Bars 29–33: she once was a true true love of mine',
+    lyric: 'she once was a true true love of mine',
+    notes: [
+      // bar 30: pickup eighth rest, eighth D4
+      ['D4',0.5],
+      // bar 31: E4 quarter, F#4 quarter, E4 quarter
+      ['E4',1],['F#4',1],['E4',1],
+      // bar 32: D4 half, C#4 quarter (chromatic approach)
+      ['D4',2],['C#4',1],
+      // bar 33: D4 dotted half
+      ['D4',3]
+    ]
+  },
+  {
+    name: 'Bars 34–38: Ooo passage',
+    lyric: 'ooo',
+    notes: [
+      // bar 34: D4 dotted half
+      ['D4',3],
+      // bar 35: D4 dotted half
+      ['D4',3],
+      // bars 36–37: rising run pickup eighth rest then
+      // F#4 eighth, G#4 eighth, A4 quarter, B4 quarter, A4 quarter
+      ['F#4',0.5],['G#4',0.5],['A4',1],['B4',1],['A4',1],
+      // bar 38: G4 quarter, F#4 quarter, G4 quarter (resolving)
+      ['G4',1],['F#4',1],['G4',1]
+    ]
+  },
+  {
+    name: 'Bars 39–41: …ooo (continued)',
+    lyric: 'ooo',
+    notes: [
+      // bar 39: E4 quarter, F4 (nat) quarter, G4 quarter
+      ['E4',1],['F4',1],['G4',1],
+      // bar 40: A4 dotted half
+      ['A4',3],
+      // bar 41: G4 half, F#4 quarter
+      ['G4',2],['F#4',1]
+    ]
+  },
+  {
+    name: 'Bars 42–45: rose-mary and thyme',
+    lyric: 'rose - ma - ry and thyme',
+    notes: [
+      // bar 42: E4 quarter, D4 half
+      ['E4',1],['D4',2],
+      // bar 43: pickup eighth rest, eighth E4
+      ['E4',0.5],
+      // bar 44: F#4 quarter, G4 quarter, A4 quarter
+      ['F#4',1],['G4',1],['A4',1],
+      // bar 45: G4 dotted half
+      ['G4',3]
+    ]
+  },
+  {
+    name: 'Bars 46–50: oh then she\'ll be a true love of mine',
+    lyric: 'oh  then she\'ll be a true love – love of mine',
+    notes: [
+      // bar 46: F#4 half, E4 quarter
+      ['F#4',2],['E4',1],
+      // bar 47: pickup eighth rest, eighth A4, quarter B4
+      ['A4',0.5],['B4',1],
+      // bar 48: A4 quarter, G4 quarter, F#4 quarter
+      ['A4',1],['G4',1],['F#4',1],
+      // bar 49: E4 half, D4 quarter
+      ['E4',2],['D4',1],
+      // bar 50: E4 half, F#4 quarter
+      ['E4',2],['F#4',1]
+    ]
+  },
+  {
+    name: 'Bars 51–55: doo doo (reprise) + then she\'ll be',
+    lyric: 'doo  doo … then she\'ll be a true love – love of mine',
+    notes: [
+      // bar 51: E4 dotted half
+      ['E4',3],
+      // bars 52–54: same as opening doo doo
+      ['D4',1.5],['E4',0.5],['F#4',1],
+      ['G4',1.5],['A4',0.5],['G4',1],
+      ['F#4',1],['E4',1],['D4',1],
+      // bar 55: A4 dotted half
+      ['A4',3]
+    ]
+  },
+  {
+    name: 'Bars 56–62: long doo doo sustain',
+    lyric: '(sustained)',
+    notes: [
+      ['G4',3],['F#4',3],['E4',3],['D4',3],
+      ['D4',3],['D4',3],['D4',3]
+    ]
+  },
+  {
+    name: 'Bars 63–67: Have her find me an acre of land',
+    lyric: 'Have her find me an ac-re of land',
+    notes: [
+      // bar 63: pickup eighth rest, eighth D4, quarter E4
+      ['D4',0.5],['E4',1],
+      // bar 64: F#4 dotted quarter, G4 eighth, A4 quarter
+      ['F#4',1.5],['G4',0.5],['A4',1],
+      // bar 65: B4 dotted half
+      ['B4',3],
+      // bar 66: A4 half, G4 quarter
+      ['A4',2],['G4',1],
+      // bar 67: F#4 quarter, E4 half
+      ['F#4',1],['E4',2]
+    ]
+  },
+  {
+    name: 'Bars 68–72: Parsley sage (forte reprise)',
+    lyric: 'pars-ley sage, rose-ma-ry and thyme  rose-ma-ry',
+    notes: [
+      // bar 68: pickup eighth rest, eighth D4
+      ['D4',0.5],
+      // bar 69: E4 dotted quarter, F#4 eighth, G#4 quarter (chromatic)
+      ['E4',1.5],['F#4',0.5],['G#4',1],
+      // bar 70: A4 dotted half
+      ['A4',3],
+      // bar 71: G4 half, F#4 quarter
+      ['G4',2],['F#4',1],
+      // bar 72: E4 quarter, D4 half
+      ['E4',1],['D4',2]
+    ]
+  },
+  {
+    name: 'Bars 72–75: rose-ma-ry (cont.)',
+    lyric: 'rose - ma - ry',
+    notes: [
+      // bar 73: pickup eighth rest, eighth E4
+      ['E4',0.5],
+      // bar 74: F#4 dotted quarter, G4 eighth, A4 quarter
+      ['F#4',1.5],['G4',0.5],['A4',1],
+      // bar 75: G4 dotted half
+      ['G4',3]
+    ]
+  },
+  {
+    name: 'Bars 76–80: Between the salt water and the sea strands',
+    lyric: 'Be-tween the salt wa-ter and the sea strands',
+    notes: [
+      // bar 76: pickup eighth rest, eighth D4, quarter E4
+      ['D4',0.5],['E4',1],
+      // bar 77: F#4 quarter, G4 quarter, A4 quarter
+      ['F#4',1],['G4',1],['A4',1],
+      // bar 78: B4 dotted half
+      ['B4',3],
+      // bar 79: A4 quarter, G4 quarter, F#4 quarter
+      ['A4',1],['G4',1],['F#4',1],
+      // bar 80: E4 quarter, D4 half
+      ['E4',1],['D4',2]
+    ]
+  },
+  {
+    name: 'Bars 81–84: then she\'ll be · then she\'ll be a true love of',
+    lyric: 'then she\'ll be  ·  then she\'ll be a true love of',
+    notes: [
+      // bar 81: pickup eighth rest, eighth D4
+      ['D4',0.5],
+      // bar 82: E4 quarter, F#4 quarter, E4 quarter
+      ['E4',1],['F#4',1],['E4',1],
+      // bar 83: D4 dotted half
+      ['D4',3],
+      // bar 84: pickup eighth rest, eighth D4, quarter E4
+      ['D4',0.5],['E4',1]
+    ]
+  },
+  {
+    name: 'Bars 85–88: …a true love of mine (finale approach)',
+    lyric: '…a true love of mine',
+    notes: [
+      // bar 85: F#4 quarter, G4 quarter, A4 quarter
+      ['F#4',1],['G4',1],['A4',1],
+      // bar 86: G4 half, F#4 quarter
+      ['G4',2],['F#4',1],
+      // bar 87: E4 quarter, D4 half
+      ['E4',1],['D4',2],
+      // bar 88: pickup eighth rest, eighth E4
+      ['E4',0.5]
+    ]
+  },
+  {
+    name: 'Bars 88–end: Final dah dah run',
+    lyric: 'dah dah dah dah dah dah  dah dah dah dah dah dah',
+    notes: [
+      // bar 89: F#4 quarter, G4 quarter, A4 quarter
+      ['F#4',1],['G4',1],['A4',1],
+      // bar 90: B4 quarter, A4 quarter, G4 quarter
+      ['B4',1],['A4',1],['G4',1],
+      // bar 91: F#4 quarter, E4 quarter, D4 quarter
+      ['F#4',1],['E4',1],['D4',1],
+      // bar 92: E4 quarter, F#4 quarter, G4 quarter
+      ['E4',1],['F#4',1],['G4',1],
+      // bar 93: A4 quarter, G4 quarter, F#4 quarter
+      ['A4',1],['G4',1],['F#4',1],
+      // bar 94: E4 dotted half (final)
+      ['E4',3]
+    ]
+  }
+];
 
 let BPM = 72;
 let audioCtx = null;
@@ -69,90 +372,9 @@ let stopFlag = false;
 
 function getCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume().catch(err => console.log('AudioContext resume failed:', err));
-  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
-
-const phrases = [
-  { name: 'Opening – doo doo', lyric: 'doo doo (hummed intro)', notes: [
-    ['D4',1.5],['E4',0.5],['F#4',0.5],['G4',0.5],
-    ['A4',1],['G4',0.5],['F#4',0.5],['E4',0.5],['D4',0.5],
-    ['A4',1],['G4',0.5],['F#4',0.5],['E4',0.5],['D4',0.5]
-  ]},
-  { name: 'Sustained held notes', lyric: '(long held notes)', notes: [
-    ['D4',3],['D4',3],['D4',3],['D4',1.5],['D4',0.5],['E4',0.5],['D4',0.5]
-  ]},
-  { name: 'Are you going to Scarborough Fair?', lyric: 'Are you go-ing to Scar-bo-rough fair', notes: [
-    ['D4',0.5],['E4',0.5],['D4',1],['C4',0.5],
-    ['D4',1.5],['D4',0.5],['E4',0.5],['F#4',0.5],
-    ['G4',1.5],['F#4',1],['E4',0.5]
-  ]},
-  { name: 'Parsley sage rosemary and thyme', lyric: 'Pars-ley sage, rose-ma-ry and thyme, rose-ma-ry and thyme', notes: [
-    ['D4',0.5],['E4',0.5],['F#4',1],['G4',0.5],
-    ['A4',1],['B4',0.5],['A4',0.5],['G4',0.5],['F#4',0.5],
-    ['G4',1],['A4',0.5],['B4',0.5],['A4',0.5],['G4',0.5]
-  ]},
-  { name: 'Remember me', lyric: 'Re-mem-ber me to the one who lives there', notes: [
-    ['D4',0.5],['E4',0.5],['F#4',1],['G4',0.5],
-    ['A4',1],['G4',1],['F#4',1],
-    ['E4',1],['F#4',0.5],['G4',0.5],['F#4',0.5],['E4',0.5]
-  ]},
-  { name: 'She once was a true love', lyric: 'She once was a true love of', notes: [
-    ['D4',1.5],['E4',0.5],['F#4',0.5],['E4',0.5],
-    ['D4',1],['E4',0.5],['F#4',0.5],['G4',0.5],['A4',0.5],
-    ['G4',1.5],['F#4',1],['E4',0.5]
-  ]},
-  { name: 'True true love of mine', lyric: 'she once was a true true love of mine', notes: [
-    ['D4',0.5],['E4',0.5],['F#4',0.5],['E4',0.5],['D4',0.5],['E4',0.5],
-    ['F#4',1],['E4',0.5],['D4',0.5],['E4',0.5],['C#4',0.5],
-    ['D4',3]
-  ]},
-  { name: 'Ooo melisma', lyric: 'ooo (flowing passage)', notes: [
-    ['D4',1.5],['D4',1.5],
-    ['F#4',0.5],['G4',0.25],['A4',0.25],['B4',0.5],['A4',0.5],['G4',0.5],
-    ['G4',0.5],['F#4',0.5],['E4',0.5],['F4',0.5],['G4',1]
-  ]},
-  { name: 'Rose-mary and thyme (reprise)', lyric: 'rose-ma-ry and thyme', notes: [
-    ['E4',0.5],['F#4',0.5],['G4',0.5],['A4',0.5],['G4',0.5],['F#4',0.5],
-    ['G4',1.5],['A4',1],['G4',0.5]
-  ]},
-  { name: 'Then she\'ll be a true love', lyric: 'oh then she\'ll be a true love – love of mine', notes: [
-    ['A4',0.5],['B4',0.5],['A4',0.5],['G4',0.5],
-    ['A4',1],['G4',0.5],['F#4',0.5],['E4',0.5],['D4',0.5],
-    ['E4',1],['F#4',0.5],['E4',1.5]
-  ]},
-  { name: 'Doo doo (return)', lyric: 'doo doo', notes: [
-    ['D4',1.5],['E4',0.5],['F#4',0.5],['G4',0.5],
-    ['A4',1],['G4',0.5],['F#4',0.5],['E4',0.5],['D4',0.5]
-  ]},
-  { name: 'Have her find me an acre of land', lyric: 'Have her find me an ac-re of land', notes: [
-    ['D4',0.5],['E4',0.5],['F#4',0.5],['G4',0.5],
-    ['A4',1],['G4',0.5],['F#4',1],['E4',0.5],
-    ['D4',3]
-  ]},
-  { name: 'Parsley sage reprise (forte)', lyric: 'pars-ley sage, rose-ma-ry and thyme, rose-ma-ry', notes: [
-    ['D4',0.5],['E4',0.5],['F#4',1],['G#4',0.5],
-    ['A4',1],['G4',0.5],['F#4',0.5],['E4',0.5],['D4',0.5],
-    ['E4',1],['F#4',0.5],['G4',1.5]
-  ]},
-  { name: 'Between the salt water and sea strands', lyric: 'Be-tween the salt wa-ter and the sea strands', notes: [
-    ['D4',0.5],['E4',0.5],['F#4',0.5],['G4',0.5],['A4',0.5],['G4',0.5],
-    ['F#4',1],['E4',0.5],['D4',0.5],['E4',0.5],['F#4',0.5],
-    ['G4',1.5],['A4',1.5]
-  ]},
-  { name: 'Then she\'ll be a true love of mine', lyric: 'then she\'ll be · then she\'ll be a true love of', notes: [
-    ['D4',0.5],['E4',0.5],['F#4',0.5],
-    ['D4',3],['D4',0.5],['E4',0.5],['F#4',0.5],
-    ['G4',1],['F#4',0.5],['E4',0.5],['D4',0.5],['E4',0.5]
-  ]},
-  { name: 'Final dah dah run', lyric: 'dah dah dah dah dah dah dah dah dah dah dah dah', notes: [
-    ['D4',0.5],['E4',0.5],['F#4',0.5],['G4',0.5],['A4',0.5],['B4',0.5],
-    ['A4',0.5],['G4',0.5],['F#4',0.5],['E4',0.5],['D4',0.5],['E4',0.5],
-    ['F#4',0.5],['G4',0.5],['A4',0.5],['G4',0.5],['F#4',0.5],['E4',0.5]
-  ]}
-];
 
 function render() {
   document.getElementById('phrase-list').innerHTML = phrases.map((p, i) => `
@@ -205,7 +427,6 @@ async function playNotes(notes, onProg) {
 }
 
 async function playPhrase(i) {
-  const ctx = getCtx();
   stopFlag = true;
   await sleep(60);
   stopFlag = false;
@@ -221,14 +442,13 @@ async function playPhrase(i) {
 }
 
 async function playAll() {
-  const ctx = getCtx();
   stopFlag = true; await sleep(60); stopFlag = false;
   isLooping = false;
   document.getElementById('btn-loop').classList.remove('loop-on');
   for (let i = 0; i < phrases.length; i++) {
     if (stopFlag) break;
     highlight(i);
-    setStatus(`Phrase ${i+1}/${phrases.length}: ${phrases[i].name}`);
+    setStatus('Phrase ' + (i+1) + '/' + phrases.length + ': ' + phrases[i].name);
     setProgress(0);
     await playNotes(phrases[i].notes, pct => setProgress(pct * 100));
   }
@@ -244,20 +464,6 @@ function toggleLoop() {
 }
 
 function updateTempo(v) { BPM = parseInt(v); document.getElementById('tempo-val').textContent = '♩= ' + BPM; }
-
-function testAudio() {
-  const ctx = getCtx();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.frequency.value = 440;
-  gain.gain.setValueAtTime(0.3, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-  osc.start(ctx.currentTime);
-  osc.stop(ctx.currentTime + 0.5);
-  setStatus('Test tone playing... (you should hear a short beep)');
-}
 
 render();
 </script>
