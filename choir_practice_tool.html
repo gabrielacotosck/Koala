@@ -188,6 +188,90 @@
 
   .button-secondary:hover { background: #d0d0d0; }
 
+  .progress-status {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+    border: 1px solid #e0e0e0;
+    display: none;
+  }
+
+  .progress-status.show { display: block; }
+
+  .progress-status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .progress-status-title {
+    font-weight: 600;
+    color: #333;
+    font-size: 13px;
+  }
+
+  .progress-percentage {
+    font-weight: 600;
+    color: #667eea;
+    font-size: 13px;
+  }
+
+  .progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  .progress-status-message {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .progress-status-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    font-size: 11px;
+    color: #999;
+  }
+
+  .progress-detail-item {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .progress-detail-label {
+    font-weight: 500;
+  }
+
+  .spinner-small {
+    width: 12px;
+    height: 12px;
+    border: 2px solid #f0f0f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   .loading {
     display: none;
     text-align: center;
@@ -204,8 +288,6 @@
     animation: spin 0.8s linear infinite;
     margin: 0 auto 1rem;
   }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
 
   .ocr-result {
     margin-top: 1.5rem;
@@ -483,10 +565,52 @@
         <img id="previewImage" class="preview-image" alt="Preview">
       </div>
 
-      <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <p>Processing music sheet with OCR...</p>
-        <p style="font-size: 12px; color: #999; margin-top: 0.5rem;">Analyzing voice parts...</p>
+      <div class="progress-status" id="uploadProgress">
+        <div class="progress-status-header">
+          <span class="progress-status-title">📥 Uploading file...</span>
+          <span class="progress-percentage" id="uploadPercent">0%</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="uploadBar"></div>
+        </div>
+        <div class="progress-status-message">
+          <span class="spinner-small"></span>
+          <span id="uploadMessage">Reading file...</span>
+        </div>
+        <div class="progress-status-details">
+          <div class="progress-detail-item">
+            <span class="progress-detail-label">File size:</span>
+            <span id="fileSize">-</span>
+          </div>
+          <div class="progress-detail-item">
+            <span class="progress-detail-label">Status:</span>
+            <span id="uploadStatus">Preparing...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-status" id="ocrProgress">
+        <div class="progress-status-header">
+          <span class="progress-status-title">🔍 Processing with OCR...</span>
+          <span class="progress-percentage" id="ocrPercent">0%</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="ocrBar"></div>
+        </div>
+        <div class="progress-status-message">
+          <span class="spinner-small"></span>
+          <span id="ocrMessage">Initializing OCR engine...</span>
+        </div>
+        <div class="progress-status-details">
+          <div class="progress-detail-item">
+            <span class="progress-detail-label">Stage:</span>
+            <span id="ocrStage">Initializing</span>
+          </div>
+          <div class="progress-detail-item">
+            <span class="progress-detail-label">Est. time:</span>
+            <span id="ocrTime">Calculating...</span>
+          </div>
+        </div>
       </div>
 
       <div class="detected-voices" id="detectedVoices" style="display: none;">
@@ -650,6 +774,7 @@
   let uploadedImage = null;
   let ocrText = '';
   let detectedVoices = [];
+  let ocrStartTime = 0;
 
   // Comprehensive voice definitions with 8 part splits
   const VOICES = {
@@ -746,6 +871,54 @@
     handleFiles(e.dataTransfer.files);
   });
 
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  function showUploadProgress() {
+    document.getElementById('uploadProgress').classList.add('show');
+  }
+
+  function hideUploadProgress() {
+    document.getElementById('uploadProgress').classList.remove('show');
+  }
+
+  function updateUploadProgress(percent, message, fileSize = null) {
+    document.getElementById('uploadPercent').textContent = Math.round(percent) + '%';
+    document.getElementById('uploadBar').style.width = Math.round(percent) + '%';
+    document.getElementById('uploadMessage').textContent = message;
+    if (fileSize) {
+      document.getElementById('fileSize').textContent = formatFileSize(fileSize);
+    }
+  }
+
+  function showOCRProgress() {
+    document.getElementById('ocrProgress').classList.add('show');
+  }
+
+  function hideOCRProgress() {
+    document.getElementById('ocrProgress').classList.remove('show');
+  }
+
+  function updateOCRProgress(percent, stage, message) {
+    document.getElementById('ocrPercent').textContent = Math.round(percent) + '%';
+    document.getElementById('ocrBar').style.width = Math.round(percent) + '%';
+    document.getElementById('ocrStage').textContent = stage;
+    document.getElementById('ocrMessage').textContent = message;
+    
+    // Update estimated time
+    if (ocrStartTime > 0 && percent > 5) {
+      const elapsed = (Date.now() - ocrStartTime) / 1000;
+      const estimatedTotal = (elapsed / percent) * 100;
+      const remaining = Math.max(0, Math.round(estimatedTotal - elapsed));
+      document.getElementById('ocrTime').textContent = remaining + 's left';
+    }
+  }
+
   function handleFiles(files) {
     const file = files[0];
     if (!file) return;
@@ -757,15 +930,34 @@
       return;
     }
 
+    showUploadProgress();
+    updateUploadProgress(10, 'Reading file...', file.size);
+
     const reader = new FileReader();
+    
+    reader.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const percent = 10 + (e.loaded / e.total) * 80;
+        updateUploadProgress(percent, 'Loading file data...', file.size);
+      }
+    };
+
     reader.onload = (e) => {
       uploadedImage = e.target.result;
-      showPreview(uploadedImage);
-      showProcessButton();
+      updateUploadProgress(100, 'File ready!', file.size);
+      
+      setTimeout(() => {
+        hideUploadProgress();
+        showPreview(uploadedImage);
+        showProcessButton();
+      }, 500);
     };
+
     reader.onerror = () => {
+      hideUploadProgress();
       showError('Failed to read file');
     };
+
     reader.readAsDataURL(file);
   }
 
@@ -787,28 +979,66 @@
       return;
     }
 
-    const loading = document.getElementById('loading');
     const processBtn = document.getElementById('processBtn');
     
-    loading.classList.add('show');
+    showOCRProgress();
+    ocrStartTime = Date.now();
+    updateOCRProgress(5, 'Initializing', 'Starting OCR engine...');
     processBtn.disabled = true;
 
     try {
-      const result = await Tesseract.recognize(uploadedImage, 'eng');
+      // Simulate progress updates with Tesseract
+      const progressIntervals = [];
+      
+      const updateProgress = (progress) => {
+        const percent = 5 + (progress.progress * 90);
+        let stage = 'Initializing';
+        let message = 'Starting OCR engine...';
+        
+        if (progress.progress < 0.3) {
+          stage = 'Initializing';
+          message = 'Loading OCR models...';
+        } else if (progress.progress < 0.6) {
+          stage = 'Recognizing Text';
+          message = 'Analyzing image content...';
+        } else if (progress.progress < 0.9) {
+          stage = 'Extracting Text';
+          message = 'Extracting recognized text...';
+        } else {
+          stage = 'Finalizing';
+          message = 'Processing results...';
+        }
+        
+        updateOCRProgress(percent, stage, message);
+      };
+
+      const result = await Tesseract.recognize(uploadedImage, 'eng', {
+        logger: (m) => updateProgress(m)
+      });
+
       ocrText = result.data.text;
       
       // Detect voice parts from OCR text
       detectVoiceParts(ocrText);
       
+      updateOCRProgress(95, 'Finalizing', 'Completing analysis...');
+      
+      await new Promise(r => setTimeout(r, 300));
+      
       displayOCRResult(ocrText);
       showSuccess('Music sheet processed successfully!');
+      updateOCRProgress(100, 'Complete', 'Done!');
+      
+      setTimeout(() => {
+        hideOCRProgress();
+      }, 1000);
       
       // Enable playback
       document.getElementById('playBtn').disabled = false;
     } catch (error) {
+      hideOCRProgress();
       showError('OCR processing failed: ' + error.message);
     } finally {
-      loading.classList.remove('show');
       processBtn.disabled = false;
     }
   }
@@ -860,6 +1090,8 @@
     document.getElementById('clearBtn').style.display = 'none';
     document.getElementById('playBtn').disabled = true;
     
+    hideUploadProgress();
+    hideOCRProgress();
     clearMessages();
   }
 
@@ -1011,36 +1243,34 @@
 
   function stopPlayback() {
     isPlaying = false;
-    document.getElementById('stopBtn').style.display = 'none';
     document.getElementById('playBtn').style.display = 'inline-flex';
+    document.getElementById('stopBtn').style.display = 'none';
     updateStatus('Playback stopped', 'Ready');
   }
 
-  function updateStatus(message, title = null) {
-    document.getElementById('statusMessage').textContent = message;
-    if (title) {
-      document.getElementById('statusTitle').textContent = title;
-    }
-  }
-
-  function updateCurrentNote(note, time) {
+  function updateCurrentNote(note, count) {
     document.getElementById('currentNote').textContent = note;
-    document.getElementById('noteTime').textContent = time;
+    document.getElementById('noteTime').textContent = count;
   }
 
   function updateProgress(percent) {
     document.getElementById('progressFill').style.width = percent + '%';
   }
 
+  function updateStatus(message, title = 'Status') {
+    document.getElementById('statusTitle').textContent = title;
+    document.getElementById('statusMessage').textContent = message;
+  }
+
   function showError(message) {
     const errorEl = document.getElementById('errorMessage');
-    errorEl.textContent = message;
+    errorEl.textContent = '❌ ' + message;
     errorEl.classList.add('show');
   }
 
   function showSuccess(message) {
     const successEl = document.getElementById('successMessage');
-    successEl.textContent = message;
+    successEl.textContent = '✅ ' + message;
     successEl.classList.add('show');
   }
 
