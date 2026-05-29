@@ -18,7 +18,7 @@
   }
 
   .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     background: white;
     border-radius: 16px;
@@ -38,12 +38,12 @@
 
   .content {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1.2fr;
     gap: 2rem;
     padding: 2rem;
   }
 
-  @media (max-width: 1024px) {
+  @media (max-width: 1200px) {
     .content { grid-template-columns: 1fr; }
   }
 
@@ -59,6 +59,14 @@
     font-weight: 600;
     margin-bottom: 1rem;
     color: #667eea;
+  }
+
+  .section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.8rem;
+    color: #333;
   }
 
   .upload-zone {
@@ -164,24 +172,28 @@
     line-height: 1.6;
     color: #333;
     border-left: 4px solid #667eea;
+    font-family: 'Courier New', monospace;
   }
 
-  .voice-selector {
+  .voice-grid {
     display: grid;
-    gap: 1rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
     margin-bottom: 1.5rem;
   }
 
   .voice-option {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    align-items: flex-start;
+    gap: 8px;
   }
 
   .voice-option input[type="radio"] {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     cursor: pointer;
+    margin-top: 3px;
+    flex-shrink: 0;
   }
 
   .voice-option label {
@@ -192,8 +204,9 @@
     gap: 2px;
   }
 
-  .voice-name { font-weight: 500; color: #333; }
-  .voice-range { font-size: 12px; color: #999; }
+  .voice-name { font-weight: 500; color: #333; font-size: 13px; }
+  .voice-range { font-size: 11px; color: #999; }
+  .voice-icon { font-size: 12px; margin-right: 4px; }
 
   .controls {
     display: flex;
@@ -206,11 +219,13 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    flex: 1;
+    min-width: 200px;
   }
 
   .slider-group label { font-size: 13px; color: #555; white-space: nowrap; }
-  .slider-group input[type="range"] { width: 120px; height: 4px; accent-color: #667eea; }
-  .slider-value { font-size: 13px; font-weight: 600; min-width: 45px; }
+  .slider-group input[type="range"] { flex: 1; height: 4px; accent-color: #667eea; }
+  .slider-value { font-size: 13px; font-weight: 600; min-width: 45px; text-align: right; }
 
   .playback-status {
     padding: 1rem;
@@ -248,10 +263,13 @@
     border: 1px solid #e0e0e0;
     text-align: center;
     margin-top: 1rem;
+    display: none;
   }
 
+  .note-display.show { display: block; }
+
   .current-note {
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 700;
     color: #667eea;
     font-family: 'Courier New', monospace;
@@ -313,6 +331,40 @@
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
+
+  .voice-badge {
+    display: inline-block;
+    background: #e8f0fe;
+    border: 1px solid #d2d9ff;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1a73e8;
+    margin-right: 6px;
+    margin-bottom: 6px;
+  }
+
+  .detected-voices {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid #e0e0e0;
+  }
+
+  .detected-voices h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+
+  .detected-voices p {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+  }
 </style>
 </head>
 <body>
@@ -321,6 +373,7 @@
   <div class="header">
     <h1>🎵 Choir Practice Tool</h1>
     <p>Upload music sheets for OCR recognition and practice your voice part</p>
+    <p style="font-size: 12px; margin-top: 0.5rem; opacity: 0.8;">Supports 8 voice parts: Soprano 1 & 2, Mezzo Soprano, Alto, Tenor, Baritone, Bass</p>
   </div>
 
   <div class="content">
@@ -344,7 +397,12 @@
       <div class="loading" id="loading">
         <div class="spinner"></div>
         <p>Processing music sheet with OCR...</p>
-        <p style="font-size: 12px; color: #999; margin-top: 0.5rem;">This may take a moment</p>
+        <p style="font-size: 12px; color: #999; margin-top: 0.5rem;">Analyzing voice parts...</p>
+      </div>
+
+      <div class="detected-voices" id="detectedVoices" style="display: none;">
+        <h4>🔍 Detected Voice Parts:</h4>
+        <p id="detectedVoicesText"></p>
       </div>
 
       <div class="ocr-result" id="ocrResult">
@@ -368,38 +426,79 @@
     <div class="section">
       <h2>🎤 Select Your Voice Part</h2>
       
-      <div class="voice-selector" id="voiceSelector">
+      <div class="voice-grid" id="voiceSelector">
+        <!-- Soprano Parts -->
         <div class="voice-option">
-          <input type="radio" id="soprano" name="voice" value="soprano" checked>
-          <label for="soprano">
-            <span class="voice-name">Soprano</span>
-            <span class="voice-range">High voice (C4 - C6)</span>
+          <input type="radio" id="soprano1" name="voice" value="soprano1" checked>
+          <label for="soprano1">
+            <span class="voice-name"><span class="voice-icon">👑</span>Soprano I</span>
+            <span class="voice-range">C4 - C6</span>
           </label>
         </div>
+
+        <div class="voice-option">
+          <input type="radio" id="soprano2" name="voice" value="soprano2">
+          <label for="soprano2">
+            <span class="voice-name"><span class="voice-icon">👑</span>Soprano II</span>
+            <span class="voice-range">A3 - A5</span>
+          </label>
+        </div>
+
+        <!-- Alto Parts -->
+        <div class="voice-option">
+          <input type="radio" id="mezzoSoprano" name="voice" value="mezzoSoprano">
+          <label for="mezzoSoprano">
+            <span class="voice-name"><span class="voice-icon">🎵</span>Mezzo Soprano</span>
+            <span class="voice-range">F3 - F5</span>
+          </label>
+        </div>
+
         <div class="voice-option">
           <input type="radio" id="alto" name="voice" value="alto">
           <label for="alto">
-            <span class="voice-name">Alto</span>
-            <span class="voice-range">High-mid voice (G3 - G5)</span>
+            <span class="voice-name"><span class="voice-icon">🎵</span>Alto</span>
+            <span class="voice-range">G3 - G5</span>
           </label>
         </div>
+
+        <!-- Tenor Parts -->
         <div class="voice-option">
           <input type="radio" id="tenor" name="voice" value="tenor">
           <label for="tenor">
-            <span class="voice-name">Tenor</span>
-            <span class="voice-range">Mid-low voice (C3 - C5)</span>
+            <span class="voice-name"><span class="voice-icon">🎶</span>Tenor</span>
+            <span class="voice-range">C3 - C5</span>
           </label>
         </div>
+
+        <!-- Baritone Part -->
+        <div class="voice-option">
+          <input type="radio" id="baritone" name="voice" value="baritone">
+          <label for="baritone">
+            <span class="voice-name"><span class="voice-icon">🎶</span>Baritone</span>
+            <span class="voice-range">A2 - A4</span>
+          </label>
+        </div>
+
+        <!-- Bass Part -->
         <div class="voice-option">
           <input type="radio" id="bass" name="voice" value="bass">
           <label for="bass">
-            <span class="voice-name">Bass</span>
-            <span class="voice-range">Low voice (C2 - C4)</span>
+            <span class="voice-name"><span class="voice-icon">🔊</span>Bass</span>
+            <span class="voice-range">C2 - C4</span>
+          </label>
+        </div>
+
+        <!-- Additional Bass Variant -->
+        <div class="voice-option">
+          <input type="radio" id="bassBass" name="voice" value="bassBass">
+          <label for="bassBass">
+            <span class="voice-name"><span class="voice-icon">🔊</span>Bass II</span>
+            <span class="voice-range">E2 - E4</span>
           </label>
         </div>
       </div>
 
-      <h2 style="margin-top: 2rem;">⚙️ Playback Settings</h2>
+      <h3>⚙️ Playback Settings</h3>
       
       <div class="settings-grid">
         <div class="setting">
@@ -442,7 +541,7 @@
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       </div>
 
-      <div class="note-display" id="noteDisplay" style="display: none;">
+      <div class="note-display" id="noteDisplay">
         <div class="current-note" id="currentNote">-</div>
         <div class="note-time" id="noteTime">Waiting...</div>
       </div>
@@ -455,41 +554,76 @@
   let audioContext;
   let synth;
   let isPlaying = false;
-  let currentVoice = 'soprano';
+  let currentVoice = 'soprano1';
   let currentTempo = 90;
   let currentVolume = 0.7;
   let currentInstrument = 'triangle';
   let uploadedImage = null;
   let ocrText = '';
+  let detectedVoices = [];
 
-  // Voice definitions with frequency ranges
+  // Comprehensive voice definitions with 8 part splits
   const VOICES = {
-    soprano: {
-      name: 'Soprano',
-      range: [523, 1047], // C4 to C6 in Hz
-      defaultOctave: 5
+    soprano1: {
+      name: 'Soprano I',
+      range: [523, 1047], // C4 to C6
+      defaultOctave: 5,
+      icon: '👑'
+    },
+    soprano2: {
+      name: 'Soprano II',
+      range: [440, 880], // A3 to A5
+      defaultOctave: 4,
+      icon: '👑'
+    },
+    mezzoSoprano: {
+      name: 'Mezzo Soprano',
+      range: [349, 698], // F3 to F5
+      defaultOctave: 4,
+      icon: '🎵'
     },
     alto: {
       name: 'Alto',
       range: [196, 784], // G3 to G5
-      defaultOctave: 4
+      defaultOctave: 4,
+      icon: '🎵'
     },
     tenor: {
       name: 'Tenor',
       range: [131, 523], // C3 to C5
-      defaultOctave: 4
+      defaultOctave: 4,
+      icon: '🎶'
+    },
+    baritone: {
+      name: 'Baritone',
+      range: [110, 440], // A2 to A4
+      defaultOctave: 3,
+      icon: '🎶'
     },
     bass: {
       name: 'Bass',
       range: [65, 262], // C2 to C4
-      defaultOctave: 3
+      defaultOctave: 2,
+      icon: '🔊'
+    },
+    bassBass: {
+      name: 'Bass II',
+      range: [82, 330], // E2 to E4
+      defaultOctave: 2,
+      icon: '🔊'
     }
   };
 
-  // Note to frequency mapping
-  const NOTE_FREQ = {
-    'C': 16.35, 'C#': 17.32, 'D': 18.35, 'D#': 19.45, 'E': 20.60, 'F': 21.83,
-    'F#': 23.12, 'G': 24.50, 'G#': 25.96, 'A': 27.50, 'A#': 29.13, 'B': 30.87
+  // Voice detection keywords
+  const VOICE_KEYWORDS = {
+    soprano1: ['soprano 1', 's1', 'soprano i', 'sop 1', 's.1'],
+    soprano2: ['soprano 2', 's2', 'soprano ii', 'sop 2', 's.2'],
+    mezzoSoprano: ['mezzo soprano', 'mezzo-soprano', 'mezzo', 'ms', 'mez', 'mezzo-sop'],
+    alto: ['alto', 'a', 'alt', 'altos'],
+    tenor: ['tenor', 't', 'ten', 'tenors'],
+    baritone: ['baritone', 'bari', 'bar', 'baritones', 'b.t'],
+    bass: ['bass', 'b', 'bas', 'basses', 'b.s'],
+    bassBass: ['bass 2', 'b2', 'bass ii', 'bass 2', 'b.2']
   };
 
   // Upload zone handling
@@ -556,6 +690,9 @@
       const result = await Tesseract.recognize(uploadedImage, 'eng');
       ocrText = result.data.text;
       
+      // Detect voice parts from OCR text
+      detectVoiceParts(ocrText);
+      
       displayOCRResult(ocrText);
       showSuccess('Music sheet processed successfully!');
       
@@ -569,20 +706,49 @@
     }
   }
 
+  function detectVoiceParts(text) {
+    const lowerText = text.toLowerCase();
+    detectedVoices = [];
+
+    // Check for each voice type
+    for (const [voiceKey, keywords] of Object.entries(VOICE_KEYWORDS)) {
+      for (const keyword of keywords) {
+        if (lowerText.includes(keyword)) {
+          detectedVoices.push(VOICES[voiceKey].name);
+          break;
+        }
+      }
+    }
+
+    // Remove duplicates
+    detectedVoices = [...new Set(detectedVoices)];
+
+    // Display detected voices
+    if (detectedVoices.length > 0) {
+      const voicesEl = document.getElementById('detectedVoices');
+      const voicesText = document.getElementById('detectedVoicesText');
+      voicesText.innerHTML = detectedVoices.map(v => `<span class="voice-badge">${v}</span>`).join('');
+      voicesEl.style.display = 'block';
+    }
+  }
+
   function displayOCRResult(text) {
     const result = document.getElementById('ocrResult');
     const textEl = document.getElementById('ocrText');
-    textEl.textContent = text || 'No text detected';
+    // Show first 500 characters to avoid overwhelming display
+    textEl.textContent = text.substring(0, 500) + (text.length > 500 ? '\n[...truncated...]' : '');
     result.classList.add('show');
   }
 
   function clearUpload() {
     uploadedImage = null;
     ocrText = '';
+    detectedVoices = [];
     fileInput.value = '';
     
     document.getElementById('previewContainer').classList.remove('show');
     document.getElementById('ocrResult').classList.remove('show');
+    document.getElementById('detectedVoices').style.display = 'none';
     document.getElementById('processBtn').style.display = 'none';
     document.getElementById('clearBtn').style.display = 'none';
     document.getElementById('playBtn').disabled = true;
@@ -628,6 +794,8 @@
         release: 0.5
       }
     }).toDestination();
+    
+    synth.volume.value = Tone.Decibels.toDb(currentVolume);
   }
 
   async function startPlayback() {
@@ -642,7 +810,7 @@
     document.getElementById('playBtn').style.display = 'none';
     document.getElementById('stopBtn').style.display = 'inline-flex';
     document.getElementById('playbackStatus').classList.add('show');
-    document.getElementById('noteDisplay').style.display = 'block';
+    document.getElementById('noteDisplay').classList.add('show');
     
     updateStatus('Playing your ' + VOICES[currentVoice].name + ' part...', 'Playback');
     
@@ -669,6 +837,7 @@
       updateCurrentNote(note.name, (i + 1) + ' / ' + voiceNotes.length);
       updateProgress((i / voiceNotes.length) * 100);
       
+      synth.volume.value = Tone.Decibels.toDb(currentVolume);
       synth.triggerAttackRelease(note.freq, duration * 0.9);
       
       await Tone.Transport.bpm.value = currentTempo;
@@ -681,32 +850,56 @@
   function getVoiceNotes(voice) {
     // Demo notes for each voice - in a real app, these would come from OCR analysis
     const demoNotes = {
-      soprano: [
+      soprano1: [
         { name: 'D5', freq: 'D5', beats: 1 },
         { name: 'E5', freq: 'E5', beats: 1 },
         { name: 'F#5', freq: 'F#5', beats: 1 },
         { name: 'G5', freq: 'G5', beats: 2 }
       ],
-      alto: [
+      soprano2: [
         { name: 'B4', freq: 'B4', beats: 1 },
         { name: 'C5', freq: 'C5', beats: 1 },
         { name: 'D5', freq: 'D5', beats: 1 },
         { name: 'E5', freq: 'E5', beats: 2 }
       ],
-      tenor: [
+      mezzoSoprano: [
         { name: 'G4', freq: 'G4', beats: 1 },
         { name: 'A4', freq: 'A4', beats: 1 },
         { name: 'B4', freq: 'B4', beats: 1 },
         { name: 'C5', freq: 'C5', beats: 2 }
       ],
-      bass: [
+      alto: [
         { name: 'E4', freq: 'E4', beats: 1 },
-        { name: 'F4', freq: 'F4', beats: 1 },
+        { name: 'F#4', freq: 'F#4', beats: 1 },
         { name: 'G4', freq: 'G4', beats: 1 },
         { name: 'A4', freq: 'A4', beats: 2 }
+      ],
+      tenor: [
+        { name: 'G3', freq: 'G3', beats: 1 },
+        { name: 'A3', freq: 'A3', beats: 1 },
+        { name: 'B3', freq: 'B3', beats: 1 },
+        { name: 'C4', freq: 'C4', beats: 2 }
+      ],
+      baritone: [
+        { name: 'E3', freq: 'E3', beats: 1 },
+        { name: 'F#3', freq: 'F#3', beats: 1 },
+        { name: 'G3', freq: 'G3', beats: 1 },
+        { name: 'A3', freq: 'A3', beats: 2 }
+      ],
+      bass: [
+        { name: 'C3', freq: 'C3', beats: 1 },
+        { name: 'D3', freq: 'D3', beats: 1 },
+        { name: 'E3', freq: 'E3', beats: 1 },
+        { name: 'F#3', freq: 'F#3', beats: 2 }
+      ],
+      bassBass: [
+        { name: 'E2', freq: 'E2', beats: 1 },
+        { name: 'F#2', freq: 'F#2', beats: 1 },
+        { name: 'G2', freq: 'G2', beats: 1 },
+        { name: 'A2', freq: 'A2', beats: 2 }
       ]
     };
-    return demoNotes[voice] || demoNotes.soprano;
+    return demoNotes[voice] || demoNotes.soprano1;
   }
 
   function stopPlayback() {
@@ -715,7 +908,7 @@
     
     document.getElementById('playBtn').style.display = 'inline-flex';
     document.getElementById('stopBtn').style.display = 'none';
-    document.getElementById('noteDisplay').style.display = 'none';
+    document.getElementById('noteDisplay').classList.remove('show');
     
     updateStatus('Practice complete!', 'Done');
     updateProgress(0);
