@@ -14,7 +14,7 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #1a1a1a;
     min-height: 100vh;
-    padding: 2rem 1rem;
+    padding: 1rem;
   }
 
   .container {
@@ -29,11 +29,11 @@
   .header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 2rem;
+    padding: 1.5rem;
     text-align: center;
   }
 
-  .header h1 { font-size: 28px; margin-bottom: 0.5rem; }
+  .header h1 { font-size: 24px; margin-bottom: 0.5rem; }
   .header p { font-size: 14px; opacity: 0.9; }
 
   .content {
@@ -44,7 +44,22 @@
   }
 
   @media (max-width: 1200px) {
-    .content { grid-template-columns: 1fr; }
+    .header { padding: 1.5rem 1rem; }
+    .content { 
+      grid-template-columns: 1fr; 
+      padding: 1.5rem;
+      gap: 1.5rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 0.5rem; }
+    .header h1 { font-size: 20px; }
+    .header p { font-size: 13px; }
+    .content {
+      padding: 1rem;
+      gap: 1rem;
+    }
   }
 
   .section {
@@ -52,6 +67,10 @@
     border-radius: 12px;
     padding: 1.5rem;
     border: 1px solid #e0e0e0;
+  }
+
+  @media (max-width: 768px) {
+    .section { padding: 1rem; }
   }
 
   .section h2 {
@@ -77,6 +96,11 @@
     cursor: pointer;
     transition: all 0.3s;
     background: #f0f4ff;
+    user-select: none;
+  }
+
+  @media (max-width: 768px) {
+    .upload-zone { padding: 1.5rem; }
   }
 
   .upload-zone:hover {
@@ -90,7 +114,11 @@
     transform: scale(1.02);
   }
 
-  .upload-zone input[type="file"] { display: none; }
+  .upload-zone input[type="file"] { 
+    display: none;
+    pointer-events: none;
+  }
+  
   .upload-zone svg { width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.6; }
   .upload-zone p { font-size: 14px; color: #555; margin-bottom: 0.5rem; }
   .upload-zone .hint { font-size: 12px; color: #999; }
@@ -120,6 +148,13 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
+  }
+
+  @media (max-width: 480px) {
+    .button {
+      padding: 8px 14px;
+      font-size: 13px;
+    }
   }
 
   .button-primary {
@@ -173,6 +208,8 @@
     color: #333;
     border-left: 4px solid #667eea;
     font-family: 'Courier New', monospace;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   .voice-grid {
@@ -180,6 +217,13 @@
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .voice-grid {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
   }
 
   .voice-option {
@@ -194,6 +238,7 @@
     cursor: pointer;
     margin-top: 3px;
     flex-shrink: 0;
+    accent-color: #667eea;
   }
 
   .voice-option label {
@@ -215,12 +260,24 @@
     margin-bottom: 1.5rem;
   }
 
+  @media (max-width: 480px) {
+    .controls { flex-direction: column; }
+    .controls .button { width: 100%; justify-content: center; }
+  }
+
   .slider-group {
     display: flex;
     align-items: center;
     gap: 8px;
     flex: 1;
     min-width: 200px;
+  }
+
+  @media (max-width: 768px) {
+    .slider-group {
+      min-width: auto;
+      flex: 0 1 100%;
+    }
   }
 
   .slider-group label { font-size: 13px; color: #555; white-space: nowrap; }
@@ -266,6 +323,10 @@
     display: none;
   }
 
+  @media (max-width: 768px) {
+    .note-display { padding: 1rem; }
+  }
+
   .note-display.show { display: block; }
 
   .current-note {
@@ -273,6 +334,10 @@
     font-weight: 700;
     color: #667eea;
     font-family: 'Courier New', monospace;
+  }
+
+  @media (max-width: 768px) {
+    .current-note { font-size: 24px; }
   }
 
   .note-time { font-size: 12px; color: #999; margin-top: 0.5rem; }
@@ -308,6 +373,12 @@
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
     margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .settings-grid {
+      grid-template-columns: 1fr;
+    }
   }
 
   .setting {
@@ -412,7 +483,7 @@
       <div class="error-message" id="errorMessage"></div>
       <div class="success-message" id="successMessage"></div>
 
-      <div style="margin-top: 1rem; display: flex; gap: 10px;">
+      <div style="margin-top: 1rem; display: flex; gap: 10px; flex-wrap: wrap;">
         <button class="button button-primary" id="processBtn" onclick="processImage()" style="display: none;">
           🔍 Process with OCR
         </button>
@@ -630,34 +701,60 @@
   const uploadZone = document.getElementById('uploadZone');
   const fileInput = document.getElementById('fileInput');
 
-  uploadZone.addEventListener('click', () => fileInput.click());
-  
+  // Click handler - properly delegate to file input
+  uploadZone.addEventListener('click', (e) => {
+    // Don't trigger if clicking on already-visible input
+    if (e.target !== fileInput) {
+      fileInput.click();
+    }
+  });
+
+  // Drag over
   uploadZone.addEventListener('dragover', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     uploadZone.classList.add('dragover');
   });
 
-  uploadZone.addEventListener('dragleave', () => {
+  // Drag leave
+  uploadZone.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     uploadZone.classList.remove('dragover');
   });
 
+  // Drop
   uploadZone.addEventListener('drop', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     uploadZone.classList.remove('dragover');
     handleFiles(e.dataTransfer.files);
   });
 
-  fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+  // File input change
+  fileInput.addEventListener('change', (e) => {
+    handleFiles(e.target.files);
+  });
 
   function handleFiles(files) {
     const file = files[0];
     if (!file) return;
+
+    // Basic file validation
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
+    if (!validTypes.includes(file.type)) {
+      showError('Please upload an image (PNG, JPG) or PDF file');
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = (e) => {
       uploadedImage = e.target.result;
       showPreview(uploadedImage);
       showProcessButton();
+    };
+    reader.onerror = () => {
+      showError('Failed to read file');
     };
     reader.readAsDataURL(file);
   }
