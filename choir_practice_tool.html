@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Choir Practice Tool - Music Sheet OCR</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    overflow: hidden;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .header h1 { font-size: 28px; margin-bottom: 0.5rem; }
+  .header p { font-size: 14px; opacity: 0.9; }
+
+  .content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    padding: 2rem;
+  }
+
+  @media (max-width: 1024px) {
+    .content { grid-template-columns: 1fr; }
+  }
+
+  .section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #e0e0e0;
+  }
+
+  .section h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #667eea;
+  }
+
+  .upload-zone {
+    border: 2px dashed #667eea;
+    border-radius: 10px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #f0f4ff;
+  }
+
+  .upload-zone:hover {
+    background: #e8ecff;
+    border-color: #764ba2;
+  }
+
+  .upload-zone.dragover {
+    background: #e0e7ff;
+    border-color: #764ba2;
+    transform: scale(1.02);
+  }
+
+  .upload-zone input[type="file"] { display: none; }
+  .upload-zone svg { width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.6; }
+  .upload-zone p { font-size: 14px; color: #555; margin-bottom: 0.5rem; }
+  .upload-zone .hint { font-size: 12px; color: #999; }
+
+  .preview-container {
+    margin-top: 1.5rem;
+    display: none;
+  }
+
+  .preview-container.show { display: block; }
+  .preview-image {
+    width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .button-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .button-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4); }
+  .button-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .button-secondary {
+    background: #e0e0e0;
+    color: #333;
+  }
+
+  .button-secondary:hover { background: #d0d0d0; }
+
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 1.5rem;
+  }
+
+  .loading.show { display: block; }
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f0f0f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .ocr-result {
+    margin-top: 1.5rem;
+    display: none;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .ocr-result.show { display: block; }
+  .ocr-text {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #333;
+    border-left: 4px solid #667eea;
+  }
+
+  .voice-selector {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .voice-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .voice-option input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  .voice-option label {
+    cursor: pointer;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .voice-name { font-weight: 500; color: #333; }
+  .voice-range { font-size: 12px; color: #999; }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+
+  .slider-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .slider-group label { font-size: 13px; color: #555; white-space: nowrap; }
+  .slider-group input[type="range"] { width: 120px; height: 4px; accent-color: #667eea; }
+  .slider-value { font-size: 13px; font-weight: 600; min-width: 45px; }
+
+  .playback-status {
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+    margin-bottom: 1rem;
+    display: none;
+  }
+
+  .playback-status.show { display: block; }
+  .status-title { font-weight: 600; color: #333; margin-bottom: 0.5rem; }
+  .status-message { font-size: 13px; color: #666; }
+
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 1rem 0;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    width: 0%;
+    transition: width 0.1s;
+  }
+
+  .note-display {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    text-align: center;
+    margin-top: 1rem;
+  }
+
+  .current-note {
+    font-size: 24px;
+    font-weight: 700;
+    color: #667eea;
+    font-family: 'Courier New', monospace;
+  }
+
+  .note-time { font-size: 12px; color: #999; margin-top: 0.5rem; }
+
+  .error-message {
+    background: #fee;
+    border: 1px solid #fcc;
+    border-radius: 8px;
+    padding: 1rem;
+    color: #c33;
+    font-size: 13px;
+    margin-top: 1rem;
+    display: none;
+  }
+
+  .error-message.show { display: block; }
+
+  .success-message {
+    background: #efe;
+    border: 1px solid #cfc;
+    border-radius: 8px;
+    padding: 1rem;
+    color: #3c3;
+    font-size: 13px;
+    margin-top: 1rem;
+    display: none;
+  }
+
+  .success-message.show { display: block; }
+
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .setting {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .setting label { font-size: 12px; font-weight: 600; color: #555; }
+  .setting input,
+  .setting select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+
+  .setting input:focus,
+  .setting select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🎵 Choir Practice Tool</h1>
+    <p>Upload music sheets for OCR recognition and practice your voice part</p>
+  </div>
+
+  <div class="content">
+    <!-- LEFT: Upload & OCR -->
+    <div class="section">
+      <h2>📄 Upload Music Sheet</h2>
+      
+      <div class="upload-zone" id="uploadZone">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        <p><strong>Drag and drop your music sheet here</strong></p>
+        <p class="hint">or click to select an image (PNG, JPG, PDF)</p>
+        <input type="file" id="fileInput" accept="image/*,.pdf">
+      </div>
+
+      <div class="preview-container" id="previewContainer">
+        <img id="previewImage" class="preview-image" alt="Preview">
+      </div>
+
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Processing music sheet with OCR...</p>
+        <p style="font-size: 12px; color: #999; margin-top: 0.5rem;">This may take a moment</p>
+      </div>
+
+      <div class="ocr-result" id="ocrResult">
+        <div class="ocr-text" id="ocrText"></div>
+      </div>
+
+      <div class="error-message" id="errorMessage"></div>
+      <div class="success-message" id="successMessage"></div>
+
+      <div style="margin-top: 1rem; display: flex; gap: 10px;">
+        <button class="button button-primary" id="processBtn" onclick="processImage()" style="display: none;">
+          🔍 Process with OCR
+        </button>
+        <button class="button button-secondary" id="clearBtn" onclick="clearUpload()" style="display: none;">
+          ✕ Clear
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Voice Selection & Playback -->
+    <div class="section">
+      <h2>🎤 Select Your Voice Part</h2>
+      
+      <div class="voice-selector" id="voiceSelector">
+        <div class="voice-option">
+          <input type="radio" id="soprano" name="voice" value="soprano" checked>
+          <label for="soprano">
+            <span class="voice-name">Soprano</span>
+            <span class="voice-range">High voice (C4 - C6)</span>
+          </label>
+        </div>
+        <div class="voice-option">
+          <input type="radio" id="alto" name="voice" value="alto">
+          <label for="alto">
+            <span class="voice-name">Alto</span>
+            <span class="voice-range">High-mid voice (G3 - G5)</span>
+          </label>
+        </div>
+        <div class="voice-option">
+          <input type="radio" id="tenor" name="voice" value="tenor">
+          <label for="tenor">
+            <span class="voice-name">Tenor</span>
+            <span class="voice-range">Mid-low voice (C3 - C5)</span>
+          </label>
+        </div>
+        <div class="voice-option">
+          <input type="radio" id="bass" name="voice" value="bass">
+          <label for="bass">
+            <span class="voice-name">Bass</span>
+            <span class="voice-range">Low voice (C2 - C4)</span>
+          </label>
+        </div>
+      </div>
+
+      <h2 style="margin-top: 2rem;">⚙️ Playback Settings</h2>
+      
+      <div class="settings-grid">
+        <div class="setting">
+          <label for="tempoSlider">Tempo (BPM)</label>
+          <input type="range" id="tempoSlider" min="40" max="180" value="90" step="1">
+          <span class="slider-value" id="tempoValue">♩ = 90</span>
+        </div>
+        <div class="setting">
+          <label for="volumeSlider">Volume</label>
+          <input type="range" id="volumeSlider" min="0" max="100" value="70" step="1">
+          <span class="slider-value" id="volumeValue">70%</span>
+        </div>
+        <div class="setting">
+          <label for="instrumentSelect">Instrument</label>
+          <select id="instrumentSelect">
+            <option value="sine">Pure Tone</option>
+            <option value="sawtooth">Bright</option>
+            <option value="square">Hollow</option>
+            <option value="triangle" selected>Warm</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label for="loopCount">Practice Loops</label>
+          <input type="number" id="loopCount" min="1" max="10" value="1">
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="button button-primary" id="playBtn" onclick="startPlayback()" disabled>
+          ▶ Play My Part
+        </button>
+        <button class="button button-secondary" id="stopBtn" onclick="stopPlayback()" style="display: none;">
+          ⏹ Stop
+        </button>
+      </div>
+
+      <div class="playback-status" id="playbackStatus">
+        <div class="status-title" id="statusTitle">Ready</div>
+        <div class="status-message" id="statusMessage">Select a voice part to begin practice</div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+
+      <div class="note-display" id="noteDisplay" style="display: none;">
+        <div class="current-note" id="currentNote">-</div>
+        <div class="note-time" id="noteTime">Waiting...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Initialize Tone.js
+  let audioContext;
+  let synth;
+  let isPlaying = false;
+  let currentVoice = 'soprano';
+  let currentTempo = 90;
+  let currentVolume = 0.7;
+  let currentInstrument = 'triangle';
+  let uploadedImage = null;
+  let ocrText = '';
+
+  // Voice definitions with frequency ranges
+  const VOICES = {
+    soprano: {
+      name: 'Soprano',
+      range: [523, 1047], // C4 to C6 in Hz
+      defaultOctave: 5
+    },
+    alto: {
+      name: 'Alto',
+      range: [196, 784], // G3 to G5
+      defaultOctave: 4
+    },
+    tenor: {
+      name: 'Tenor',
+      range: [131, 523], // C3 to C5
+      defaultOctave: 4
+    },
+    bass: {
+      name: 'Bass',
+      range: [65, 262], // C2 to C4
+      defaultOctave: 3
+    }
+  };
+
+  // Note to frequency mapping
+  const NOTE_FREQ = {
+    'C': 16.35, 'C#': 17.32, 'D': 18.35, 'D#': 19.45, 'E': 20.60, 'F': 21.83,
+    'F#': 23.12, 'G': 24.50, 'G#': 25.96, 'A': 27.50, 'A#': 29.13, 'B': 30.87
+  };
+
+  // Upload zone handling
+  const uploadZone = document.getElementById('uploadZone');
+  const fileInput = document.getElementById('fileInput');
+
+  uploadZone.addEventListener('click', () => fileInput.click());
+  
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('dragover');
+  });
+
+  uploadZone.addEventListener('dragleave', () => {
+    uploadZone.classList.remove('dragover');
+  });
+
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+
+  fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+  function handleFiles(files) {
+    const file = files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadedImage = e.target.result;
+      showPreview(uploadedImage);
+      showProcessButton();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function showPreview(imageData) {
+    const preview = document.getElementById('previewContainer');
+    const image = document.getElementById('previewImage');
+    image.src = imageData;
+    preview.classList.add('show');
+  }
+
+  function showProcessButton() {
+    document.getElementById('processBtn').style.display = 'inline-flex';
+    document.getElementById('clearBtn').style.display = 'inline-flex';
+  }
+
+  async function processImage() {
+    if (!uploadedImage) {
+      showError('Please upload an image first');
+      return;
+    }
+
+    const loading = document.getElementById('loading');
+    const processBtn = document.getElementById('processBtn');
+    
+    loading.classList.add('show');
+    processBtn.disabled = true;
+
+    try {
+      const result = await Tesseract.recognize(uploadedImage, 'eng');
+      ocrText = result.data.text;
+      
+      displayOCRResult(ocrText);
+      showSuccess('Music sheet processed successfully!');
+      
+      // Enable playback
+      document.getElementById('playBtn').disabled = false;
+    } catch (error) {
+      showError('OCR processing failed: ' + error.message);
+    } finally {
+      loading.classList.remove('show');
+      processBtn.disabled = false;
+    }
+  }
+
+  function displayOCRResult(text) {
+    const result = document.getElementById('ocrResult');
+    const textEl = document.getElementById('ocrText');
+    textEl.textContent = text || 'No text detected';
+    result.classList.add('show');
+  }
+
+  function clearUpload() {
+    uploadedImage = null;
+    ocrText = '';
+    fileInput.value = '';
+    
+    document.getElementById('previewContainer').classList.remove('show');
+    document.getElementById('ocrResult').classList.remove('show');
+    document.getElementById('processBtn').style.display = 'none';
+    document.getElementById('clearBtn').style.display = 'none';
+    document.getElementById('playBtn').disabled = true;
+    
+    clearMessages();
+  }
+
+  // Voice selection
+  document.querySelectorAll('input[name="voice"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      currentVoice = e.target.value;
+      updateStatus('Voice changed to ' + VOICES[currentVoice].name);
+    });
+  });
+
+  // Settings
+  document.getElementById('tempoSlider').addEventListener('input', (e) => {
+    currentTempo = parseInt(e.target.value);
+    document.getElementById('tempoValue').textContent = '♩ = ' + currentTempo;
+  });
+
+  document.getElementById('volumeSlider').addEventListener('input', (e) => {
+    currentVolume = parseInt(e.target.value) / 100;
+    document.getElementById('volumeValue').textContent = parseInt(e.target.value) + '%';
+  });
+
+  document.getElementById('instrumentSelect').addEventListener('change', (e) => {
+    currentInstrument = e.target.value;
+  });
+
+  async function initAudio() {
+    if (audioContext) return;
+    
+    await Tone.start();
+    audioContext = Tone.getContext();
+    
+    synth = new Tone.Synth({
+      oscillator: { type: currentInstrument },
+      envelope: {
+        attack: 0.02,
+        decay: 0.1,
+        sustain: 0.3,
+        release: 0.5
+      }
+    }).toDestination();
+  }
+
+  async function startPlayback() {
+    if (!ocrText) {
+      showError('Please process a music sheet first');
+      return;
+    }
+
+    await initAudio();
+    
+    isPlaying = true;
+    document.getElementById('playBtn').style.display = 'none';
+    document.getElementById('stopBtn').style.display = 'inline-flex';
+    document.getElementById('playbackStatus').classList.add('show');
+    document.getElementById('noteDisplay').style.display = 'block';
+    
+    updateStatus('Playing your ' + VOICES[currentVoice].name + ' part...', 'Playback');
+    
+    const loops = parseInt(document.getElementById('loopCount').value);
+    
+    for (let loop = 0; loop < loops && isPlaying; loop++) {
+      await playExample();
+    }
+    
+    if (isPlaying) {
+      stopPlayback();
+    }
+  }
+
+  async function playExample() {
+    // Example playback with demo notes for the selected voice
+    const voiceNotes = getVoiceNotes(currentVoice);
+    const beatDuration = 60 / currentTempo;
+    
+    for (let i = 0; i < voiceNotes.length && isPlaying; i++) {
+      const note = voiceNotes[i];
+      const duration = note.beats * beatDuration;
+      
+      updateCurrentNote(note.name, (i + 1) + ' / ' + voiceNotes.length);
+      updateProgress((i / voiceNotes.length) * 100);
+      
+      synth.triggerAttackRelease(note.freq, duration * 0.9);
+      
+      await Tone.Transport.bpm.value = currentTempo;
+      await new Promise(r => setTimeout(r, duration * 1000));
+    }
+    
+    updateProgress(100);
+  }
+
+  function getVoiceNotes(voice) {
+    // Demo notes for each voice - in a real app, these would come from OCR analysis
+    const demoNotes = {
+      soprano: [
+        { name: 'D5', freq: 'D5', beats: 1 },
+        { name: 'E5', freq: 'E5', beats: 1 },
+        { name: 'F#5', freq: 'F#5', beats: 1 },
+        { name: 'G5', freq: 'G5', beats: 2 }
+      ],
+      alto: [
+        { name: 'B4', freq: 'B4', beats: 1 },
+        { name: 'C5', freq: 'C5', beats: 1 },
+        { name: 'D5', freq: 'D5', beats: 1 },
+        { name: 'E5', freq: 'E5', beats: 2 }
+      ],
+      tenor: [
+        { name: 'G4', freq: 'G4', beats: 1 },
+        { name: 'A4', freq: 'A4', beats: 1 },
+        { name: 'B4', freq: 'B4', beats: 1 },
+        { name: 'C5', freq: 'C5', beats: 2 }
+      ],
+      bass: [
+        { name: 'E4', freq: 'E4', beats: 1 },
+        { name: 'F4', freq: 'F4', beats: 1 },
+        { name: 'G4', freq: 'G4', beats: 1 },
+        { name: 'A4', freq: 'A4', beats: 2 }
+      ]
+    };
+    return demoNotes[voice] || demoNotes.soprano;
+  }
+
+  function stopPlayback() {
+    isPlaying = false;
+    synth?.triggerRelease();
+    
+    document.getElementById('playBtn').style.display = 'inline-flex';
+    document.getElementById('stopBtn').style.display = 'none';
+    document.getElementById('noteDisplay').style.display = 'none';
+    
+    updateStatus('Practice complete!', 'Done');
+    updateProgress(0);
+  }
+
+  function updateStatus(message, title = 'Status') {
+    document.getElementById('statusTitle').textContent = title;
+    document.getElementById('statusMessage').textContent = message;
+  }
+
+  function updateCurrentNote(noteName, progress) {
+    document.getElementById('currentNote').textContent = noteName;
+    document.getElementById('noteTime').textContent = progress;
+  }
+
+  function updateProgress(percent) {
+    document.getElementById('progressFill').style.width = Math.min(100, percent) + '%';
+  }
+
+  function showError(message) {
+    const errorEl = document.getElementById('errorMessage');
+    errorEl.textContent = message;
+    errorEl.classList.add('show');
+    setTimeout(() => errorEl.classList.remove('show'), 5000);
+  }
+
+  function showSuccess(message) {
+    const successEl = document.getElementById('successMessage');
+    successEl.textContent = message;
+    successEl.classList.add('show');
+    setTimeout(() => successEl.classList.remove('show'), 4000);
+  }
+
+  function clearMessages() {
+    document.getElementById('errorMessage').classList.remove('show');
+    document.getElementById('successMessage').classList.remove('show');
+  }
+</script>
+
+</body>
+</html>
