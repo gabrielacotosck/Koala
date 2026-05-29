@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scarborough Fair — Alto Practice</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #1a1a1a; min-height: 100vh; padding: 1.5rem 1rem 3rem; }
+  h1 { font-size: 20px; font-weight: 600; margin-bottom: 2px; }
+  .subtitle { font-size: 13px; color: #666; margin-bottom: 1.25rem; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; align-items: center; }
+  button { padding: 9px 16px; border-radius: 10px; border: 1px solid #ccc; background: #fff; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; -webkit-tap-highlight-color: transparent; }
+  button:active { background: #eee; }
+  button.loop-on { background: #e8f0fe; border-color: #4285f4; color: #1a73e8; }
+  .tempo-wrap { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 4px; }
+  .tempo-wrap label { font-size: 13px; color: #555; white-space: nowrap; }
+  .tempo-wrap input[type=range] { flex: 1; height: 4px; accent-color: #4285f4; }
+  .tempo-val { font-size: 13px; font-weight: 600; min-width: 52px; }
+  .phrase-list { display: flex; flex-direction: column; gap: 8px; }
+  .phrase { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 12px 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.1s; }
+  .phrase:active { background: #f0f0f0; }
+  .phrase.playing { border-color: #4285f4; background: #e8f0fe; }
+  .phrase-row { display: flex; align-items: center; gap: 10px; }
+  .phrase-num { font-size: 12px; color: #999; min-width: 20px; }
+  .phrase-name { font-size: 15px; font-weight: 500; flex: 1; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid #ccc; }
+  .phrase.playing .dot { background: #4285f4; border-color: #4285f4; }
+  .phrase-lyric { font-size: 12px; color: #777; margin-top: 4px; padding-left: 30px; font-style: italic; }
+  .progress-track { height: 4px; background: #e0e0e0; border-radius: 2px; margin: 12px 0; overflow: hidden; }
+  .progress-fill { height: 100%; background: #4285f4; width: 0%; transition: width 0.1s; border-radius: 2px; }
+  .status { font-size: 13px; color: #555; min-height: 20px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<h1>Scarborough Fair — Alto</h1>
+<p class="subtitle">G major · 3/4 time · Tap a phrase to practice</p>
+
+<div class="controls">
+  <button onclick="playAll()">▶ Play all</button>
+  <button id="btn-loop" onclick="toggleLoop()">⟳ Loop phrase</button>
+  <button onclick="stopAll()">■ Stop</button>
+  <div class="tempo-wrap">
+    <label>Tempo</label>
+    <input type="range" min="40" max="120" value="72" step="1" id="tempo-slider" oninput="updateTempo(this.value)">
+    <span class="tempo-val" id="tempo-val">♩= 72</span>
+  </div>
+</div>
+
+<div class="status" id="status">Tap a phrase to start</div>
+<div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+<div class="phrase-list" id="phrase-list"></div>
+
+<script>
+const NOTE = {
+  'C3':130.81,'D3':146.83,'E3':164.81,'F3':174.61,'G3':196.00,'A3':220.00,'B3':246.94,
+  'C4':261.63,'D4':293.66,'E4':329.63,'F4':349.23,'F#4':369.99,'G4':392.00,'A4':440.00,
+  'Bb4':466.16,'B4':493.88,'C5':523.25,'D5':587.33,'E5':659.25,'F5':698.46,
+  'F#5':739.99,'G5':783.99,'A5':880.00,'B5':987.77,
+  'C#4':277.18,'C#5':554.37,'D#4':311.13,'G#4':415.30,'G#5':830.61,'F4':349.23
+};
+
+let BPM = 72;
+let audioCtx = null;
+let isLooping = false;
+let stopFlag = false;
+
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+const phrases = [
+  { name: 'Opening – doo doo', lyric: 'doo doo (hummed intro)', notes: [
+    ['D4',1.5],['E4',0.5],['F#4',0.5],['G4',0.5],
+    ['A4',1],['G4',0.5],['F#4',0.5],['E4',0.5],['D4',0.5],
+    ['A4',1],['G4',0.5],['F#4',0.5],['E4',0.5],['D4',0.5]
+  ]},
+  { name: 'Sustained held notes', lyric: '(long held notes)', notes: [
+    ['D4',3],['D4',3],['D4',3],['D4',1.5],['D4',0.5],['E4',0.5],['D4',0.5]
+  ]},
+  { name: 'Are you going to Scarborough Fair?', lyric: 'Are you go-ing to Scar-bo-rough fair', notes: [
+    ['D4',0.5],['E4',0.5],['D4',1],['C4',0.5],
+    ['D4',1.5],['D4',0.5],['E4',0.5],['F#4',0.5],
+    ['G4',1.5],['F#4',1],['E4',0.5]
+  ]},
+  { name: 'Parsley sage rosemary and thyme', lyric: 'Pars-ley sage, rose-ma-ry and thyme, rose-ma-ry and thyme', notes: [
+    ['D4',0.5],['E4',0.5],['F#4',1],['G4',0.5],
+    ['A4',1],['B4',0.5],['A4',0.5],['G4',0.5],['F#4',0.5],
+    ['G4',1],['A4',0.5],['B4',0.5],['A4',0.5],['G4',0.5]
+  ]},
+  { name: 'Remember me', lyric: 'Re-mem-ber me to the one who lives there', notes: [
+    ['D4',0.5],['E4',0.5],['F#4',1],['G4',0.5],
+    ['A4',1],['G4',1],['F#4',1],
+    ['E4',1],['F#4',0.5],['G4',0.5],['F#4',0.5],['E4',0.5]
+  ]},
+  { name: 'She once was a true love', lyric: 'She once was a true love of', notes: [
+    ['D4',1.5],['E4',0.5],['F#4',0.5],['E4',0.5],
+    ['D4',1],['E4',0.5],['F#4',0.5],['G4',0.5],['A4',0.5],
+    ['G4',1.5],['F#4',1],['E4',0.5]
+  ]},
+  { name: 'True true love of mine', lyric: 'she once was a true true love of mine', notes: [
+    ['D4',0.5],['E4',0.5],['F#4',0.5],['E4',0.5],['D4',0.5],['E4',0.5],
+    ['F#4',1],['E4',0.5],['D4',0.5],['E4',0.5],['C#4',0.5],
+    ['D4',3]
+  ]},
+  { name: 'Ooo melisma', lyric: 'ooo (flowing passage)', notes: [
+    ['D4',1.5],['D4',1.5],
+    ['F#4',0.5],['G4',0.25],['A4',0.25],['B4',0.5],['A4',0.5],['G4',0.5],
+    ['G4',0.5],['F#4',0.5],['E4',0.5],['F4',0.5],['G4',1]
+  ]},
+  { name: 'Rose-mary and thyme (reprise)', lyric: 'rose-ma-ry and thyme', notes: [
+    ['E4',0.5],['F#4',0.5],['G4',0.5],['A4',0.5],['G4',0.5],['F#4',0.5],
+    ['G4',1.5],['A4',1],['G4',0.5]
+  ]},
+  { name: 'Then she\'ll be a true love', lyric: 'oh then she\'ll be a true love – love of mine', notes: [
+    ['A4',0.5],['B4',0.5],['A4',0.5],['G4',0.5],
+    ['A4',1],['G4',0.5],['F#4',0.5],['E4',0.5],['D4',0.5],
+    ['E4',1],['F#4',0.5],['E4',1.5]
+  ]},
+  { name: 'Doo doo (return)', lyric: 'doo doo', notes: [
+    ['D4',1.5],['E4',0.5],['F#4',0.5],['G4',0.5],
+    ['A4',1],['G4',0.5],['F#4',0.5],['E4',0.5],['D4',0.5]
+  ]},
+  { name: 'Have her find me an acre of land', lyric: 'Have her find me an ac-re of land', notes: [
+    ['D4',0.5],['E4',0.5],['F#4',0.5],['G4',0.5],
+    ['A4',1],['G4',0.5],['F#4',1],['E4',0.5],
+    ['D4',3]
+  ]},
+  { name: 'Parsley sage reprise (forte)', lyric: 'pars-ley sage, rose-ma-ry and thyme, rose-ma-ry', notes: [
+    ['D4',0.5],['E4',0.5],['F#4',1],['G#4',0.5],
+    ['A4',1],['G4',0.5],['F#4',0.5],['E4',0.5],['D4',0.5],
+    ['E4',1],['F#4',0.5],['G4',1.5]
+  ]},
+  { name: 'Between the salt water and sea strands', lyric: 'Be-tween the salt wa-ter and the sea strands', notes: [
+    ['D4',0.5],['E4',0.5],['F#4',0.5],['G4',0.5],['A4',0.5],['G4',0.5],
+    ['F#4',1],['E4',0.5],['D4',0.5],['E4',0.5],['F#4',0.5],
+    ['G4',1.5],['A4',1.5]
+  ]},
+  { name: 'Then she\'ll be a true love of mine', lyric: 'then she\'ll be · then she\'ll be a true love of', notes: [
+    ['D4',0.5],['E4',0.5],['F#4',0.5],
+    ['D4',3],['D4',0.5],['E4',0.5],['F#4',0.5],
+    ['G4',1],['F#4',0.5],['E4',0.5],['D4',0.5],['E4',0.5]
+  ]},
+  { name: 'Final dah dah run', lyric: 'dah dah dah dah dah dah dah dah dah dah dah dah', notes: [
+    ['D4',0.5],['E4',0.5],['F#4',0.5],['G4',0.5],['A4',0.5],['B4',0.5],
+    ['A4',0.5],['G4',0.5],['F#4',0.5],['E4',0.5],['D4',0.5],['E4',0.5],
+    ['F#4',0.5],['G4',0.5],['A4',0.5],['G4',0.5],['F#4',0.5],['E4',0.5]
+  ]}
+];
+
+function render() {
+  document.getElementById('phrase-list').innerHTML = phrases.map((p, i) => `
+    <div class="phrase" id="phrase-${i}" onclick="playPhrase(${i})">
+      <div class="phrase-row">
+        <span class="phrase-num">${i+1}</span>
+        <span class="phrase-name">${p.name}</span>
+        <div class="dot" id="dot-${i}"></div>
+      </div>
+      <div class="phrase-lyric">${p.lyric}</div>
+    </div>
+  `).join('');
+}
+
+function setStatus(m) { document.getElementById('status').textContent = m; }
+function setProgress(p) { document.getElementById('progress').style.width = Math.min(100,p) + '%'; }
+function highlight(i) {
+  document.querySelectorAll('.phrase').forEach(el => el.classList.remove('playing'));
+  if (i !== null) document.getElementById('phrase-' + i)?.classList.add('playing');
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function playNotes(notes, onProg) {
+  const ctx = getCtx();
+  const bd = 60 / BPM;
+  const total = notes.reduce((s, n) => s + n[1], 0) * bd;
+  let elapsed = 0;
+  for (const [pitch, beats] of notes) {
+    if (stopFlag) return;
+    const dur = beats * bd;
+    const freq = NOTE[pitch];
+    if (freq) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      const now = ctx.currentTime;
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.2, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.12, now + dur * 0.6);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.95);
+      osc.start(now); osc.stop(now + dur);
+    }
+    await sleep(dur * 1000);
+    elapsed += dur;
+    if (onProg) onProg(elapsed / total);
+  }
+}
+
+async function playPhrase(i) {
+  stopFlag = true;
+  await sleep(60);
+  stopFlag = false;
+  const p = phrases[i];
+  highlight(i);
+  setStatus('Playing: ' + p.name);
+  setProgress(0);
+  do {
+    await playNotes(p.notes, pct => setProgress(pct * 100));
+    if (isLooping && !stopFlag) setStatus('Looping: ' + p.name);
+  } while (isLooping && !stopFlag);
+  if (!stopFlag) { highlight(null); setProgress(0); setStatus('Done — tap a phrase to practice again'); }
+}
+
+async function playAll() {
+  stopFlag = true; await sleep(60); stopFlag = false;
+  isLooping = false;
+  document.getElementById('btn-loop').classList.remove('loop-on');
+  for (let i = 0; i < phrases.length; i++) {
+    if (stopFlag) break;
+    highlight(i);
+    setStatus(`Phrase ${i+1}/${phrases.length}: ${phrases[i].name}`);
+    setProgress(0);
+    await playNotes(phrases[i].notes, pct => setProgress(pct * 100));
+  }
+  if (!stopFlag) { highlight(null); setProgress(100); setStatus('All done! Great practice.'); }
+}
+
+function stopAll() { stopFlag = true; highlight(null); setProgress(0); setStatus('Stopped'); }
+
+function toggleLoop() {
+  isLooping = !isLooping;
+  document.getElementById('btn-loop').classList.toggle('loop-on', isLooping);
+  setStatus(isLooping ? 'Loop on — tap a phrase to loop it' : 'Loop off');
+}
+
+function updateTempo(v) { BPM = parseInt(v); document.getElementById('tempo-val').textContent = '♩= ' + BPM; }
+
+render();
+</script>
+</body>
+</html>
