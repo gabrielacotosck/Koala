@@ -224,49 +224,6 @@ body {
 .m-lyric { font-size:13px;color:#667eea;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .m-notestr { font-size:11px;color:#bbb;font-family:'Courier New',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 
-/* ── Section list ── */
-.section-item {
-  border-bottom:1px solid #f0f2ff;
-  transition:background 0.1s;
-}
-.section-item:last-child { border-bottom:none; }
-.section-item.active { background:#ede9ff; }
-
-.section-header {
-  display:flex;align-items:center;gap:10px;padding:10px 13px;cursor:pointer;
-}
-.section-header:hover { background:#f3f0ff; }
-
-.section-check {
-  width:17px;height:17px;cursor:pointer;accent-color:#667eea;flex-shrink:0;
-}
-.section-emoji { font-size:16px;flex-shrink:0; }
-.section-body  { flex:1;min-width:0; }
-.section-name  { font-size:13px;font-weight:700;color:#333; }
-.section-bars  { font-size:11px;color:#aaa;margin-top:1px; }
-.section-lyric { font-size:12px;color:#667eea;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-.section-play  { font-size:11px;color:#aaa;padding:3px 9px;border:1px solid #e0e3f8;border-radius:6px;background:#f8f9ff;transition:all 0.12s;flex-shrink:0; }
-.section-play:hover { border-color:#667eea;color:#667eea; }
-
-.section-measures {
-  display:none;border-top:1px solid #f0f2ff;
-  background:#fafbff;
-}
-.section-measures.open { display:block; }
-.section-measure-row {
-  display:flex;align-items:center;gap:10px;padding:6px 13px 6px 44px;
-  border-bottom:1px solid #f5f5ff;cursor:pointer;transition:background 0.1s;
-  font-size:12px;
-}
-.section-measure-row:last-child { border-bottom:none; }
-.section-measure-row:hover { background:#ede9ff; }
-.section-measure-row.active { background:#e8e4ff; }
-.smr-num   { color:#bbb;min-width:24px;font-weight:600; }
-.smr-lyric { color:#667eea;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-.smr-notes { color:#ccc;font-family:'Courier New',monospace;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px; }
-.m-play  { font-size:11px;color:#aaa;padding:2px 8px;border:1px solid #e0e3f8;border-radius:5px;background:#f8f9ff;transition:all 0.12s; }
-.m-play:hover { border-color:#667eea;color:#667eea; }
-
 .empty-hint { text-align:center;padding:2rem 1rem;color:#bbb;font-size:13px;font-style:italic; }
 
 @media (max-width:480px) {
@@ -280,7 +237,7 @@ body {
 
   <!-- Header -->
   <div class="header">
-    <h1>🎵 Choir Practice Tool</h1>
+    <h1>🐨 Choir Practice Tool</h1>
     <p>Load your score and practise your voice part — everything stays on your device</p>
     <div class="format-pills">
       <span class="format-pill hi">🎼 .mscz (MuseScore)</span>
@@ -392,19 +349,14 @@ body {
         </div>
       </div>
 
-      <!-- Sections -->
+      <!-- Practice Measures -->
       <div style="margin-top:1.25rem">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;flex-wrap:wrap">
-          <div class="card-title" style="margin-bottom:0">📋 Sections</div>
-          <span style="font-size:12px;color:#999">— check sections to practice, tap ▶ to play from there</span>
-          <button class="btn btn-secondary" id="btnPlaySections" onclick="playSelectedSections()" style="margin-left:auto;padding:6px 13px;font-size:12px" disabled>▶ Play checked</button>
+          <div class="card-title" style="margin-bottom:0">📋 Practice Measures</div>
+          <span style="font-size:12px;color:#999">— tap to play from there</span>
         </div>
         <div class="measure-scroll" id="sectionList">
-          <div class="empty-hint">Load a score to see sections</div>
-        </div>
-        <div style="margin-top:0.5rem;display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-secondary" style="padding:5px 11px;font-size:12px" onclick="selectAllSections(true)">☑ Select all</button>
-          <button class="btn btn-secondary" style="padding:5px 11px;font-size:12px" onclick="selectAllSections(false)">☐ Clear all</button>
+          <div class="empty-hint">Load a score to see measures</div>
         </div>
       </div>
     </div>
@@ -413,7 +365,7 @@ body {
 </div><!-- /container -->
 
 <script>
-// ─── State ────────────────────────────────────────────────────────────────────
+// ─── State ────────────────────────────────────────────────────────────
 let score = null;
 let selectedParts = new Set();
 let isLooping = false;
@@ -424,14 +376,14 @@ let BPM = 90;
 let VOL = 0.75;
 let TONE = 'organ';
 
-// ─── Audio ctx ────────────────────────────────────────────────────────────────
+// ─── Audio ctx ───────────────────────────────────────────────────────
 function getAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
 
-// ─── Metronome click ──────────────────────────────────────────────────────────
+// ─── Metronome click ──────────────────────────────────────────────────
 function metroClick(downbeat) {
   const ctx = getAudio(), now = ctx.currentTime;
   const osc = ctx.createOscillator(), g = ctx.createGain();
@@ -444,7 +396,7 @@ function metroClick(downbeat) {
   osc.start(now); osc.stop(now + 0.05);
 }
 
-// ─── Tone synthesizer ─────────────────────────────────────────────────────────
+// ─── Tone synthesizer ────────────────────────────────────────────────
 function playFreq(freq, durationSec) {
   if (!freq || freq <= 0) return;
   const ctx = getAudio(), now = ctx.currentTime;
@@ -525,19 +477,46 @@ function playFreq(freq, durationSec) {
   }
 }
 
-// ─── Note helpers ─────────────────────────────────────────────────────────────
+// ─── Note helpers ────────────────────────────────────────────────────
 const NOTE_ST = {C:0,D:2,E:4,F:5,G:7,A:9,B:11};
 function noteToFreq(step,alter,octave){ return 440*Math.pow(2,(NOTE_ST[step]+(alter||0)+(octave+1)*12-69)/12); }
 function noteLabel(step,alter,octave){ return step+(alter===1?'♯':alter===-1?'♭':'')+octave; }
 function midiToFreq(m){ return 440*Math.pow(2,(m-69)/12); }
 function midiToLabel(m){ return ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'][m%12]+( Math.floor(m/12)-1); }
-function durTypeBeats(type,el){
-  const map={whole:4,half:2,quarter:1,eighth:0.5,'16th':0.25,'32nd':0.125,'64th':0.0625,breve:8,long:16};
-  const t=el?.querySelector?.('ticks'); if(t){const v=parseInt(t.textContent);if(v>0)return v/480;}
-  return map[type]||1;
+
+// Improved duration calculation with better dotted note and ligature handling
+function durTypeBeats(type, el) {
+  const map = {
+    whole:4, half:2, quarter:1, eighth:0.5, '16th':0.25, '32nd':0.125, '64th':0.0625,
+    breve:8, long:16
+  };
+  
+  // Try to get ticks value (most accurate for MuseScore, handles ligatures and dots properly)
+  const ticksEl = el?.querySelector?.('ticks');
+  if (ticksEl) {
+    const ticks = parseInt(ticksEl.textContent);
+    if (!isNaN(ticks) && ticks > 0) {
+      // Standard: 480 ticks = quarter note (1 beat)
+      return ticks / 480;
+    }
+  }
+  
+  // Fallback to duration type mapping with proper dot handling
+  let beats = map[type] || 1;
+  
+  // Handle dots (each dot adds half of the previous duration)
+  const dotsEl = el?.querySelector?.('dots');
+  if (dotsEl) {
+    const dots = parseInt(dotsEl.textContent) || 0;
+    for (let i = 0; i < dots; i++) {
+      beats += beats / Math.pow(2, i + 1);
+    }
+  }
+  
+  return beats;
 }
 
-// ─── Voice type recognition ───────────────────────────────────────────────────
+// ─── Voice type recognition ────────────────────────────────────────────────
 const VOICE_TYPES = [
   { re:/soprano\s*i(?!i)|sop\.?\s*1|s\.?\s*1\b|soprano\s*1/i,  css:'soprano',  emoji:'👑', label:'Soprano I'   },
   { re:/soprano\s*ii|sop\.?\s*2|s\.?\s*2\b|soprano\s*2/i,       css:'soprano',  emoji:'👑', label:'Soprano II'  },
@@ -570,26 +549,19 @@ function parseMSCX(xml) {
   const doc = new DOMParser().parseFromString(xml, 'text/xml');
   if (doc.querySelector('parsererror')) throw new Error('XML parse error');
 
-  // Title
   const titleEl = doc.querySelector('metaTag[name="workTitle"]')
                 || doc.querySelector('metaTag[name="movementTitle"]')
                 || doc.querySelector('Title');
   const title = titleEl?.textContent?.trim() || 'Untitled';
 
-  // Tempo (beats per second → BPM)
   let tempo = 90;
   const tempoEl = doc.querySelector('Tempo');
   if (tempoEl) { const bps = parseFloat(tempoEl.textContent); if (bps > 0) tempo = Math.round(bps * 60); }
 
-  // Time sig
   let beats = 4, beatType = 4;
   const ts = doc.querySelector('TimeSig');
   if (ts) { beats = parseInt(ts.querySelector('sigN')?.textContent)||4; beatType = parseInt(ts.querySelector('sigD')?.textContent)||4; }
 
-  // ── Build staffId → name map from <Part> elements ────────────────────────
-  // In MuseScore 4, <Part> children <Staff> have NO id attribute.
-  // Staff IDs are assigned implicitly by order: the Nth <Staff> across all
-  // <Part> elements (in document order) corresponds to top-level <Staff id="N">.
   const partNameByStaffId = {};
   let staffCounter = 1;
   doc.querySelectorAll('Score > Part').forEach(partEl => {
@@ -599,25 +571,19 @@ function parseMSCX(xml) {
       partEl.querySelector('Instrument > shortName')?.textContent ||
       ''
     ).trim();
-
-    // Count how many staves this Part declares, assign sequential IDs
     const staffCount = partEl.querySelectorAll('Staff').length || 1;
     for (let i = 0; i < staffCount; i++) {
       partNameByStaffId[String(staffCounter++)] = raw;
     }
   });
 
-  // ── Parse top-level <Staff> elements (actual note data) ───────────────────
   const parts = [];
   doc.querySelectorAll('Score > Staff').forEach(staffEl => {
     const staffId = staffEl.getAttribute('id');
-    // Look up name from the Part map; fallback to id
     const rawName = partNameByStaffId[staffId] || ('Staff ' + staffId);
-
     const measures = [];
     staffEl.querySelectorAll('Measure').forEach((mEl, idx) => {
       const notes = [];
-      // Use first voice only
       const voiceEls = mEl.querySelectorAll('voice');
       const container = voiceEls.length > 0 ? voiceEls[0] : mEl;
 
@@ -626,9 +592,7 @@ function parseMSCX(xml) {
           notes.push({ rest:true, beats: durTypeBeats(child.querySelector('durationType')?.textContent, child) });
         } else if (child.tagName === 'Chord') {
           const dtype = child.querySelector('durationType')?.textContent;
-          const dots  = parseInt(child.querySelector('dots')?.textContent)||0;
           let bv = durTypeBeats(dtype, child);
-          if (dots===1) bv*=1.5; if (dots===2) bv*=1.75;
           const freqs=[],labels=[];
           child.querySelectorAll('Note').forEach(nEl => {
             const p = nEl.querySelector('pitch');
@@ -636,7 +600,6 @@ function parseMSCX(xml) {
             const midi = parseInt(p.textContent);
             freqs.push(midiToFreq(midi)); labels.push(midiToLabel(midi));
           });
-          // Extract lyric syllable if present
           const lyricEl = child.querySelector('Lyrics > text');
           const lyric = lyricEl?.textContent?.trim() || null;
           if (freqs.length) notes.push({ rest:false, freq:freqs[0], label:labels[0], chord:freqs.length>1?freqs:null, chordLabels:labels.length>1?labels:null, beats:bv, lyric });
@@ -650,7 +613,6 @@ function parseMSCX(xml) {
     }
   });
 
-  // Deduplicate names
   const seen={};
   parts.forEach(p=>{ seen[p.name]=(seen[p.name]||0)+1; });
   const idx={};
@@ -659,7 +621,7 @@ function parseMSCX(xml) {
   return { title, tempo, beats, beatType, parts };
 }
 
-// ─── MusicXML parser ──────────────────────────────────────────────────────────
+// ─── MusicXML parser ────────────────────────────────────────────────────────
 function parseMusicXML(xml) {
   const doc = new DOMParser().parseFromString(xml,'text/xml');
   if (doc.querySelector('parsererror')) throw new Error('XML parse error');
@@ -702,7 +664,7 @@ function parseMusicXML(xml) {
   return {title,tempo,beats,beatType,parts};
 }
 
-// ─── File loading ─────────────────────────────────────────────────────────────
+// ─── File loading ────────────────────────────────────────────────────────
 const dropZone  = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
 fileInput.addEventListener('change', e => { if(e.target.files[0]) loadFile(e.target.files[0]); });
@@ -757,7 +719,7 @@ async function loadFile(file) {
   }
 }
 
-// ─── Render ───────────────────────────────────────────────────────────────────
+// ─── Render ────────────────────────────────────────────────────────
 function renderScore(){
   if(!score) return;
   document.getElementById('scoreTitle').textContent=score.title;
@@ -801,7 +763,6 @@ function renderScore(){
   renderMeasures();
   setStatus('Score loaded. Select one or more voice parts to begin.');
 
-  // update loop max
   const total=score.parts[0]?.measures.length||0;
   document.getElementById('loopFrom').max=total;
   document.getElementById('loopTo').max=total;
@@ -815,366 +776,175 @@ function togglePart(idx,checked){
   });
   document.getElementById('btnPlay').disabled=selectedParts.size===0;
   if(selectedParts.size>0){ renderMeasures(); setStatus(selectedParts.size+' part(s) selected. Ready to play.'); }
-  else setStatus('Select a voice part above, then press play.');
+  else { renderMeasures(); setStatus('Select a voice part above, then press play.'); }
 }
 
-// ─── Section detection ────────────────────────────────────────────────────────
-// A "section" is a run of measures that belong together musically.
-// We detect boundaries by finding runs of GAP_THRESHOLD+ consecutive measures
-// where the reference part has NO lyrics at all.
-const GAP_THRESHOLD = 2; // bars of silence = new section boundary
-
-const SECTION_EMOJIS = ['🎵','🎶','🎼','🎤','🎹','🎺','🎸','🪗','🪈','🥁'];
-
-function detectSections(refPartIdx) {
-  const part = score.parts[refPartIdx];
-  if (!part) return [];
-
-  const measures = part.measures;
-  const sections = [];
-  let currentSection = null;
-  let silentRun = 0;
-
-  measures.forEach((m, mi) => {
-    const lyrics = m.notes.map(n => n.lyric).filter(Boolean);
-    const hasLyric = lyrics.length > 0;
-    const hasNotes = m.notes.some(n => !n.rest);
-
-    if (!hasLyric && hasNotes) {
-      silentRun++;
-    } else if (!hasNotes) {
-      // full rest bar — counts toward gap
-      silentRun++;
-    } else {
-      silentRun = 0;
-    }
-
-    // Start a new section?
-    const isGap = silentRun >= GAP_THRESHOLD;
-    const isFirst = mi === 0;
-
-    if (isFirst || (isGap && currentSection && currentSection.measures.length > 0 && silentRun === GAP_THRESHOLD)) {
-      // Close previous
-      if (currentSection) sections.push(currentSection);
-      currentSection = { startMi: mi, measures: [], lyrics: [], emoji: SECTION_EMOJIS[sections.length % SECTION_EMOJIS.length] };
-    }
-
-    if (!currentSection) {
-      currentSection = { startMi: mi, measures: [], lyrics: [], emoji: SECTION_EMOJIS[0] };
-    }
-
-    currentSection.measures.push(mi);
-    lyrics.forEach(l => { if (!currentSection.lyrics.includes(l)) currentSection.lyrics.push(l); });
-  });
-
-  if (currentSection && currentSection.measures.length > 0) sections.push(currentSection);
-
-  // Name each section from its first lyric words (up to 5 words)
-  sections.forEach((s, i) => {
-    // Collect all lyrics from ALL selected parts for this section for better naming
-    let allLyrics = [];
-    selectedParts.forEach(pi => {
-      s.measures.forEach(mi => {
-        (score.parts[pi]?.measures[mi]?.notes || []).forEach(n => { if (n.lyric) allLyrics.push(n.lyric); });
-      });
-    });
-    const uniqueLyrics = [...new Set(allLyrics)];
-    const preview = uniqueLyrics.slice(0, 6).join(' ');
-    s.name = preview || ('Section ' + (i + 1));
-    s.fullLyrics = uniqueLyrics;
-  });
-
-  return sections;
-}
-
-let scoreSections = [];
-
-function renderSections() {
+function renderMeasures(){
   const list = document.getElementById('sectionList');
   if (!score || !selectedParts.size) {
-    list.innerHTML = '<div class="empty-hint">Select a voice part to see sections</div>';
-    document.getElementById('btnPlaySections').disabled = true;
+    list.innerHTML = '<div class="empty-hint">Select a voice part to see measures</div>';
     return;
   }
 
-  // Use first selected part as reference for section detection
   const refPi = Array.from(selectedParts)[0];
-  scoreSections = detectSections(refPi);
-
-  if (!scoreSections.length) {
-    list.innerHTML = '<div class="empty-hint">No sections detected</div>';
-    return;
-  }
-
-  // Update loop range inputs to total bar count
-  const fp = score.parts[refPi];
-  document.getElementById('loopFrom').max = fp.measures.length;
-  document.getElementById('loopTo').max   = fp.measures.length;
-  document.getElementById('loopTo').value = Math.min(4, fp.measures.length);
-
-  list.innerHTML = scoreSections.map((s, si) => {
-    const barStart = s.measures[0] + 1;
-    const barEnd   = s.measures[s.measures.length - 1] + 1;
-    const barRange = barStart === barEnd ? `Bar ${barStart}` : `Bars ${barStart}–${barEnd}`;
-
-    // Per-measure rows inside section
-    const measureRows = s.measures.map(mi => {
-      const mNum = score.parts[refPi].measures[mi].number;
-      const lyricWords = [...new Set(
-        Array.from(selectedParts).flatMap(pi =>
-          (score.parts[pi]?.measures[mi]?.notes || []).map(n => n.lyric).filter(Boolean)
-        )
-      )].join(' ');
-      const noteStr = (score.parts[refPi].measures[mi].notes || [])
-        .filter(n => !n.rest).slice(0, 5).map(n => n.label).join(' ');
-      return `<div class="section-measure-row" id="mi${mi}" onclick="playFromMeasure(${mi})">
-        <span class="smr-num">${mNum}</span>
-        <span class="smr-lyric">${lyricWords || '—'}</span>
-        <span class="smr-notes">${noteStr}</span>
-      </div>`;
-    }).join('');
-
-    return `<div class="section-item" id="section-${si}">
-      <div class="section-header" onclick="toggleSectionExpand(${si})">
-        <input type="checkbox" class="section-check" id="sec-cb-${si}" checked
-          onclick="event.stopPropagation()" onchange="onSectionCheck()">
-        <span class="section-emoji">${s.emoji}</span>
-        <div class="section-body">
-          <div class="section-name">${s.name}</div>
-          <div class="section-bars">${barRange} · ${s.measures.length} bar${s.measures.length!==1?'s':''}</div>
-        </div>
-        <button class="section-play" onclick="event.stopPropagation();playFromMeasure(${s.measures[0]})">▶</button>
-        <span style="font-size:11px;color:#ccc;margin-left:4px" id="sec-arrow-${si}">▾</span>
-      </div>
-      <div class="section-measures" id="sec-measures-${si}">
-        ${measureRows}
+  const refPart = score.parts[refPi];
+  
+  const measures = refPart.measures.map((m, mi) => {
+    // Collect lyrics from all selected parts for this measure
+    const allLyrics = [];
+    selectedParts.forEach(pi => {
+      (score.parts[pi]?.measures[mi]?.notes || []).forEach(n => {
+        if (n.lyric && !allLyrics.includes(n.lyric)) {
+          allLyrics.push(n.lyric);
+        }
+      });
+    });
+    
+    const lyricText = allLyrics.join(' ') || '—';
+    const noteStr = (m.notes || [])
+      .filter(n => !n.rest).slice(0, 3).map(n => n.label).join(' ');
+    
+    return `<div class="measure-item" onclick="playFromMeasure(${mi})">
+      <span class="m-num">${m.number}</span>
+      <div class="m-notes">
+        <span class="m-lyric">${lyricText}</span>
+        ${noteStr ? `<span class="m-notestr">${noteStr}</span>` : ''}
       </div>
     </div>`;
   }).join('');
 
-  document.getElementById('btnPlaySections').disabled = false;
-  onSectionCheck();
+  list.innerHTML = measures || '<div class="empty-hint">No measures found</div>';
 }
 
-function toggleSectionExpand(si) {
-  const el = document.getElementById('sec-measures-' + si);
-  const arrow = document.getElementById('sec-arrow-' + si);
-  const open = el.classList.toggle('open');
-  arrow.textContent = open ? '▴' : '▾';
+function setStatus(msg) { document.getElementById('statusLine').textContent = msg; }
+
+// ─── Playback ─────────────────────────────────────────────────────
+async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function showPlay(yes) {
+  document.getElementById('btnPlay').style.display=yes?'none':'inline-flex';
+  document.getElementById('btnStop').style.display=yes?'inline-flex':'none';
 }
 
-function onSectionCheck() {
-  const anyChecked = scoreSections.some((_, si) => {
-    const cb = document.getElementById('sec-cb-' + si);
-    return cb && cb.checked;
-  });
-  document.getElementById('btnPlaySections').disabled = !anyChecked || !selectedParts.size;
-}
-
-function selectAllSections(checked) {
-  scoreSections.forEach((_, si) => {
-    const cb = document.getElementById('sec-cb-' + si);
-    if (cb) cb.checked = checked;
-  });
-  onSectionCheck();
-}
-
-async function playSelectedSections() {
+function playAll() {
   if (!score || !selectedParts.size) return;
-  stopFlag = true; await sleep(60); stopFlag = false;
+  stopFlag = true;
+  setTimeout(() => {
+    stopFlag = false;
+    runPlayback(Array.from(selectedParts), 0, null, 1);
+  }, 50);
+}
 
-  const toPlay = scoreSections.filter((_, si) => {
-    const cb = document.getElementById('sec-cb-' + si);
-    return cb && cb.checked;
-  });
+function playLoop() {
+  const from = parseInt(document.getElementById('loopFrom').value) || 1;
+  const to = parseInt(document.getElementById('loopTo').value) || 4;
+  const refPi = Array.from(selectedParts)[0];
+  const refPart = score.parts[refPi];
+  if (!refPart) return;
+  
+  stopFlag = true;
+  setTimeout(() => {
+    stopFlag = false;
+    runPlayback(Array.from(selectedParts), from - 1, to - 1, 1);
+  }, 50);
+}
 
-  if (!toPlay.length) return;
+function playFromMeasure(mi) {
+  if (!score || !selectedParts.size) return;
+  stopFlag = true;
+  setTimeout(() => {
+    stopFlag = false;
+    runPlayback(Array.from(selectedParts), mi, null, 1);
+  }, 50);
+}
 
-  const fp = score.parts[Array.from(selectedParts)[0]];
+async function runPlayback(partIndices, startMeasure = 0, endMeasure = null, loops = 1) {
+  if (!score) return;
+  
   showPlay(true);
-
-  const runOnce = async () => {
-    for (const s of toPlay) {
-      if (stopFlag) return;
-      setStatus('▶ ' + s.name);
-      for (const mi of s.measures) {
-        if (stopFlag) return;
-        hlMeasure(mi);
-        await playMeasure(mi, (lbl, lyric, mIdx, ni, b, tot) =>
-          showNote(lbl, lyric, `Bar ${fp.measures[mIdx].number}`, (ni / tot) * 100)
-        );
+  
+  for (let loop = 0; loop < loops && !stopFlag; loop++) {
+    const refPart = score.parts[partIndices[0]];
+    const measureCount = refPart.measures.length;
+    const end = endMeasure !== null ? Math.min(endMeasure, measureCount - 1) : measureCount - 1;
+    
+    for (let mi = startMeasure; mi <= end && !stopFlag; mi++) {
+      const measure = refPart.measures[mi];
+      setStatus(`▶ Bar ${measure.number}/${measureCount}`);
+      document.getElementById('nowPlaying').classList.add('show');
+      
+      // Play all selected parts together
+      const promisesForMeasure = [];
+      
+      for (const partIdx of partIndices) {
+        const part = score.parts[partIdx];
+        if (!part || !part.measures[mi]) continue;
+        
+        const m = part.measures[mi];
+        const promise = (async () => {
+          for (const note of m.notes) {
+            if (stopFlag) return;
+            if (note.rest) {
+              const dur = (note.beats * 60) / BPM;
+              await sleep(dur * 1000);
+            } else {
+              if (metroOn) metroClick(true);
+              const dur = (note.beats * 60) / BPM;
+              document.getElementById('npNote').textContent = note.label;
+              playFreq(note.freq, dur);
+              await sleep(dur * 1000);
+            }
+          }
+        })();
+        promisesForMeasure.push(promise);
       }
+      
+      await Promise.all(promisesForMeasure);
     }
-  };
+  }
+  
+  stopAll();
+}
 
-  if (isLooping) {
-    while (isLooping && !stopFlag) {
-      await runOnce();
-      if (!isLooping || stopFlag) break;
-      await sleep(150);
-    }
+function stopAll() {
+  stopFlag = true;
+  showPlay(false);
+  document.getElementById('nowPlaying').classList.remove('show');
+  document.getElementById('npNote').textContent = '—';
+  setStatus('Stopped.');
+}
+
+function toggleLoop() {
+  isLooping = !isLooping;
+  document.getElementById('loopRow').classList.toggle('show');
+  document.getElementById('btnLoop').classList.toggle('btn-active');
+}
+
+function toggleMetro() {
+  metroOn = !metroOn;
+  document.getElementById('btnMetro').classList.toggle('btn-active');
+}
+
+function syncTempo(src, val) {
+  BPM = Math.max(30, Math.min(200, parseInt(val)));
+  if (src === 'slider') {
+    document.getElementById('tempoNum').value = BPM;
   } else {
-    await runOnce();
+    document.getElementById('tempoSlider').value = BPM;
   }
-
-  if (!stopFlag) { stopAll(); setStatus('Playback complete. 🎉'); }
+  document.getElementById('tempoValue').textContent = '♩ = ' + BPM;
 }
 
-function renderMeasures() { renderSections(); }
-
-// ─── Playback ─────────────────────────────────────────────────────────────────
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const beatDur=()=>60/BPM;
-
-async function playMeasure(mi,onNote,partsSet){
-  const ap=partsSet||selectedParts;
-  if(!score||!ap.size) return;
-  const fp=score.parts[Array.from(ap)[0]];
-  const maxN=fp.measures[mi]?.notes.length||0;
-  let beatAcc=0,beatCnt=0;
-  for(let ni=0;ni<maxN;ni++){
-    if(stopFlag) return;
-    const tn=fp.measures[mi].notes[ni];
-    const dur=Math.max(0.05,tn.beats*beatDur());
-    if(metroOn){
-      if(Math.floor(beatAcc+tn.beats)>Math.floor(beatAcc)){ metroClick(beatCnt===0); beatCnt++; }
-    }
-    beatAcc+=tn.beats;
-    ap.forEach(pi=>{
-      const n=score.parts[pi]?.measures[mi]?.notes[ni];
-      if(!n||n.rest) return;
-      if(n.chord) n.chord.forEach(f=>playFreq(f,dur*0.88));
-      else playFreq(n.freq,dur*0.88);
-    });
-    const lbl=Array.from(ap).map(pi=>{
-      const n=score.parts[pi]?.measures[mi]?.notes[ni];
-      return (!n||n.rest)?null:(n.chordLabels?n.chordLabels.join('+'):n.label);
-    }).filter(Boolean).join(' / ');
-    // Use lyric from first selected part if available
-    const lyric = score.parts[Array.from(ap)[0]]?.measures[mi]?.notes[ni]?.lyric || null;
-    if(onNote) onNote(lbl, lyric, mi,ni,tn.beats,maxN);
-    await sleep(dur*1000);
-  }
+function clampTempo() {
+  const v = parseInt(document.getElementById('tempoNum').value);
+  if (isNaN(v) || v < 30) document.getElementById('tempoNum').value = 30;
+  else if (v > 200) document.getElementById('tempoNum').value = 200;
+  syncTempo('num', document.getElementById('tempoNum').value);
 }
 
-async function playAll(){
-  if(!score||!selectedParts.size) return;
-  stopFlag=true; await sleep(60); stopFlag=false;
-  const fp=score.parts[Array.from(selectedParts)[0]];
-  showPlay(true); setStatus('Playing…');
-  for(let mi=0;mi<fp.measures.length;mi++){
-    if(stopFlag) break;
-    hlMeasure(mi);
-    await playMeasure(mi,(lbl,lyric,mIdx,ni,b,tot)=>showNote(lbl,lyric,`Bar ${fp.measures[mIdx].number}`,(ni/tot)*100));
-  }
-  if(!stopFlag){ stopAll(); setStatus('Playback complete. 🎉'); }
-}
-
-async function playFromMeasure(start){
-  if(!score||!selectedParts.size) return;
-  stopFlag=true; await sleep(60); stopFlag=false;
-  const fp=score.parts[Array.from(selectedParts)[0]];
-  showPlay(true); setStatus('Playing from bar '+(start+1)+'…');
-  for(let mi=start;mi<fp.measures.length;mi++){
-    if(stopFlag) break;
-    hlMeasure(mi);
-    await playMeasure(mi,(lbl,lyric,mIdx,ni,b,tot)=>showNote(lbl,lyric,`Bar ${fp.measures[mIdx].number}`,(ni/tot)*100));
-  }
-  if(!stopFlag){ stopAll(); setStatus('Playback complete. 🎉'); }
-}
-
-async function playLoop(){
-  if(!score||!selectedParts.size) return;
-  stopFlag=true; await sleep(60); stopFlag=false;
-  const fp=score.parts[Array.from(selectedParts)[0]];
-  const from=Math.max(0,parseInt(document.getElementById('loopFrom').value)||1)-1;
-  const to  =Math.min(fp.measures.length,parseInt(document.getElementById('loopTo').value)||4);
-  showPlay(true); setStatus('Looping bars '+(from+1)+'–'+to+' 🔁');
-  while(isLooping&&!stopFlag){
-    for(let mi=from;mi<to;mi++){
-      if(stopFlag||!isLooping) return;
-      hlMeasure(mi);
-      await playMeasure(mi,(lbl,lyric,mIdx,ni,b,tot)=>showNote(lbl,lyric,`Bar ${fp.measures[mIdx].number} (loop)`,(ni/tot)*100));
-    }
-    await sleep(120);
-  }
-  if(!stopFlag){ stopAll(); setStatus('Loop ended.'); }
-}
-
-function stopAll(){
-  stopFlag=true; isLooping=false;
-  document.getElementById('btnLoop').classList.remove('btn-active');
-  document.getElementById('loopRow').classList.remove('show');
-  showPlay(false); hlMeasure(null);
-  document.getElementById('npFill').style.width='0%';
-}
-
-function toggleLoop(){
-  isLooping=!isLooping;
-  document.getElementById('btnLoop').classList.toggle('btn-active',isLooping);
-  document.getElementById('loopRow').classList.toggle('show',isLooping);
-  if(isLooping) setStatus('🔁 Loop mode on — set bar range and press ▶ Play loop');
-  else { setStatus('Loop mode off.'); stopAll(); }
-}
-
-function toggleMetro(){
-  metroOn=!metroOn;
-  document.getElementById('btnMetro').classList.toggle('btn-active',metroOn);
-  setStatus(metroOn?'🥁 Metronome on':'Metronome off');
-}
-
-// ─── UI ───────────────────────────────────────────────────────────────────────
-function showPlay(p){
-  document.getElementById('btnPlay').style.display=p?'none':'inline-flex';
-  document.getElementById('btnStop').style.display=p?'inline-flex':'none';
-  document.getElementById('nowPlaying').classList.toggle('show',p);
-}
-function showNote(lbl,lyric,ctx,pct){
-  document.getElementById('npNote').textContent = lyric || lbl || '—';
-  document.getElementById('npSub').textContent  = lyric ? lbl : '';
-  document.getElementById('npCtx').textContent  = ctx||'';
-  document.getElementById('npFill').style.width = pct+'%';
-}
-function hlMeasure(idx){
-  document.querySelectorAll('.section-item').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.section-measure-row').forEach(el => el.classList.remove('active'));
-  if (idx === null) return;
-  const row = document.getElementById('mi' + idx);
-  if (row) {
-    row.classList.add('active');
-    row.scrollIntoView({block:'nearest',behavior:'smooth'});
-    // Also highlight parent section
-    const section = row.closest('.section-item');
-    if (section) {
-      section.classList.add('active');
-      // Auto-expand if collapsed
-      const measuresEl = section.querySelector('.section-measures');
-      const si = section.id.replace('section-','');
-      const arrow = document.getElementById('sec-arrow-' + si);
-      if (measuresEl && !measuresEl.classList.contains('open')) {
-        measuresEl.classList.add('open');
-        if (arrow) arrow.textContent = '▴';
-      }
-    }
-  }
-}
-function setStatus(m){ document.getElementById('statusLine').textContent=m; }
-
-// ─── Tempo sync (slider ↔ number input) ──────────────────────────────────────
-function syncTempo(src,v){
-  let val=parseInt(v)||90;
-  val=Math.min(200,Math.max(30,val));
-  BPM=val;
-  if(src!=='slider') document.getElementById('tempoSlider').value=val;
-  if(src!=='num')    document.getElementById('tempoNum').value=val;
-}
-function clampTempo(){
-  const v=parseInt(document.getElementById('tempoNum').value)||90;
-  syncTempo('num',v);
-}
-function updateVol(v){
-  VOL=parseInt(v)/100;
-  document.getElementById('volHint').textContent=v+'%';
+function updateVol(v) {
+  VOL = Math.max(0, Math.min(1, parseInt(v) / 100));
+  document.getElementById('volHint').textContent = v + '%';
 }
 </script>
 </body>
