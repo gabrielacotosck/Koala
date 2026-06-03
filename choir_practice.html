@@ -42,36 +42,52 @@ body {
 .body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
 @media (max-width: 600px) { .body { padding: 1rem; gap: 1rem; } }
 
-/* ── Section card ── */
-.card {
-  background: #f8f9ff;
+/* ── Cards ── */
+.card { background: #f8f9ff; border-radius: 14px; padding: 1.25rem 1.5rem; border: 1px solid #e4e6f5; }
+@media (max-width: 600px) { .card { padding: 1rem; } }
+.card-title { font-size: 15px; font-weight: 700; color: #667eea; margin-bottom: 1rem; display: flex; align-items: center; gap: 6px; }
+
+/* ── Onboarding banner ── */
+.onboarding {
+  background: linear-gradient(135deg,#ede9ff,#f0f4ff);
+  border: 1px solid #c8cef5;
   border-radius: 14px;
   padding: 1.25rem 1.5rem;
-  border: 1px solid #e4e6f5;
 }
-@media (max-width: 600px) { .card { padding: 1rem; } }
-
-.card-title {
-  font-size: 15px; font-weight: 700; color: #667eea;
-  margin-bottom: 1rem;
-  display: flex; align-items: center; gap: 6px;
+.onboarding-title { font-size: 15px; font-weight: 700; color: #667eea; margin-bottom: 0.75rem; }
+.onboarding ol { padding-left: 1.3rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.onboarding li { font-size: 13px; color: #444; line-height: 1.5; }
+.onboarding li strong { color: #333; }
+.onboarding .tip {
+  margin-top: 0.85rem;
+  background: #fff8e6;
+  border: 1px solid #f5d97a;
+  border-radius: 9px;
+  padding: 0.7rem 1rem;
+  font-size: 13px;
+  color: #7a5800;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.onboarding-dismiss {
+  margin-top: 0.85rem;
+  font-size: 12px;
+  color: #999;
+  cursor: pointer;
+  text-decoration: underline;
+  display: inline-block;
 }
 
 /* ── Drop zone ── */
 .drop-zone {
-  border: 2px dashed #667eea;
-  border-radius: 12px;
-  background: #f0f4ff;
-  padding: 2rem 1.25rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-  overflow: hidden;
+  border: 2px dashed #667eea; border-radius: 12px; background: #f0f4ff;
+  padding: 2rem 1.25rem; text-align: center; cursor: pointer;
+  transition: all 0.2s; position: relative; overflow: hidden;
 }
 .drop-zone:hover, .drop-zone.drag-over { background: #e8ecff; border-color: #764ba2; }
 .drop-zone input[type=file] { position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%; }
-.drop-zone-icon { font-size: 36px; margin-bottom: 0.5rem; }
+.drop-zone-icon  { font-size: 36px; margin-bottom: 0.5rem; }
 .drop-zone-title { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 0.25rem; }
 .drop-zone-hint  { font-size: 12px; color: #888; }
 
@@ -93,7 +109,7 @@ body {
 .score-badges { display:flex; gap:6px; flex-wrap:wrap; }
 .score-badge { font-size:11px; padding:3px 9px; border-radius:6px; background:#ede9ff; color:#764ba2; font-weight:600; border:1px solid #d4c9ff; }
 
-/* ── Error / success ── */
+/* ── Messages ── */
 .msg-box { display:none; margin-top:0.75rem; border-radius:10px; padding:0.85rem 1rem; font-size:13px; }
 .msg-box.show { display:block; }
 .msg-error   { background:#fff0f0; border:1px solid #ffcccc; color:#c33; }
@@ -102,19 +118,7 @@ body {
 /* ── Voice grid ── */
 .voice-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(175px,1fr)); gap:8px; }
 @media (max-width:480px) { .voice-grid { grid-template-columns:1fr 1fr; } }
-
-.voice-chip {
-  border:1.5px solid #e0e3f8;
-  border-radius:10px;
-  background:#fff;
-  padding:10px 12px;
-  cursor:pointer;
-  transition:all 0.15s;
-  display:flex;
-  align-items:center;
-  gap:9px;
-  user-select:none;
-}
+.voice-chip { border:1.5px solid #e0e3f8; border-radius:10px; background:#fff; padding:10px 12px; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:9px; user-select:none; }
 .voice-chip:hover  { border-color:#667eea; background:#f3f0ff; }
 .voice-chip.active { border-color:#667eea; background:#ede9ff; }
 .voice-chip input[type=checkbox] { display:none; }
@@ -124,7 +128,6 @@ body {
 .vc-name  { font-size:13px;font-weight:600;color:#222; }
 .vc-badge { font-size:10px;font-weight:700;letter-spacing:0.04em;padding:1px 6px;border-radius:4px;margin-top:2px;display:inline-block; }
 .vc-bars  { font-size:11px;color:#999;margin-top:1px; }
-
 .vt-soprano  { background:#e8f0fe;color:#1a73e8; }
 .vt-mezzo    { background:#e6f4ea;color:#188038; }
 .vt-alto     { background:#fff3e0;color:#e65100; }
@@ -133,97 +136,61 @@ body {
 .vt-bass     { background:#e8eaed;color:#3c4043; }
 .vt-other    { background:#f1f3f4;color:#80868b; }
 
-/* ── Settings grid ── */
+/* ── Settings ── */
 .settings-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
 @media (max-width:560px) { .settings-grid { grid-template-columns:1fr; } }
-
 .setting { display:flex; flex-direction:column; gap:5px; }
 .setting label { font-size:12px; font-weight:600; color:#555; }
 .setting input[type=range] { height:5px; accent-color:#667eea; cursor:pointer; }
-.setting select,
-.setting input[type=number] {
-  padding:7px 9px; border:1px solid #ddd; border-radius:8px;
-  font-size:13px; background:#fff; color:#222;
-}
-.setting select:focus,
-.setting input[type=number]:focus {
-  outline:none; border-color:#667eea; box-shadow:0 0 0 3px rgba(102,126,234,0.12);
-}
-
-/* Tempo row: slider + number input side by side */
+.setting select, .setting input[type=number] { padding:7px 9px; border:1px solid #ddd; border-radius:8px; font-size:13px; background:#fff; color:#222; }
+.setting select:focus, .setting input[type=number]:focus { outline:none; border-color:#667eea; box-shadow:0 0 0 3px rgba(102,126,234,0.12); }
 .tempo-row { display:flex; align-items:center; gap:8px; }
 .tempo-row input[type=range] { flex:1; height:5px; accent-color:#667eea; cursor:pointer; }
-.tempo-num {
-  width:58px; padding:6px 7px; border:1px solid #ddd; border-radius:8px;
-  font-size:13px; font-weight:600; color:#667eea; text-align:center; background:#fff;
-}
+.tempo-num { width:58px; padding:6px 7px; border:1px solid #ddd; border-radius:8px; font-size:13px; font-weight:600; color:#667eea; text-align:center; background:#fff; }
 .tempo-num:focus { outline:none; border-color:#667eea; box-shadow:0 0 0 3px rgba(102,126,234,0.12); }
 .slider-hint { font-size:11px; color:#aaa; margin-top:1px; }
 
 /* ── Buttons ── */
 .btn-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:0.25rem; }
-
-.btn {
-  padding:9px 18px; border:none; border-radius:9px; font-size:14px; font-weight:600;
-  cursor:pointer; display:inline-flex; align-items:center; gap:6px;
-  transition:all 0.2s; white-space:nowrap;
-}
+.btn { padding:9px 18px; border:none; border-radius:9px; font-size:14px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s; white-space:nowrap; }
 .btn:active { transform:scale(0.96); }
 .btn:disabled { opacity:0.45; cursor:not-allowed; transform:none !important; }
-
-.btn-primary {
-  background:linear-gradient(135deg,#667eea,#764ba2);
-  color:#fff;
-}
+.btn-primary { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; }
 .btn-primary:hover:not(:disabled) { box-shadow:0 6px 18px rgba(102,126,234,0.45); transform:translateY(-1px); }
-
 .btn-secondary { background:#e8eaff; color:#667eea; border:1px solid #c8cef5; }
 .btn-secondary:hover:not(:disabled) { background:#d8dbff; }
-
 .btn-stop { background:#fff0f0; color:#c33; border:1px solid #ffd0d0; }
 .btn-stop:hover { background:#ffe0e0; }
-
 .btn-active { background:#ede9ff; color:#764ba2; border:1px solid #c9bcf5; }
 
-/* ── Loop range row ── */
-.loop-row {
-  display:none; align-items:center; gap:8px; flex-wrap:wrap;
-  background:#fff; border:1px solid #e4e6f5; border-radius:10px;
-  padding:0.75rem 1rem; margin-top:0.75rem; font-size:13px; color:#555;
-}
+/* ── Loop row ── */
+.loop-row { display:none; align-items:center; gap:8px; flex-wrap:wrap; background:#fff; border:1px solid #e4e6f5; border-radius:10px; padding:0.75rem 1rem; margin-top:0.75rem; font-size:13px; color:#555; }
 .loop-row.show { display:flex; }
-.loop-row input[type=number] {
-  width:56px; padding:5px 7px; border:1px solid #ddd; border-radius:7px;
-  font-size:13px; text-align:center; background:#fff;
-}
-.loop-row input:focus { outline:none; border-color:#667eea; }
+.loop-row input[type=number] { width:56px; padding:5px 7px; border:1px solid #ddd; border-radius:7px; font-size:13px; text-align:center; background:#fff; }
 
 /* ── Now playing ── */
 .now-playing { display:none; background:#fff; border:1px solid #e4e6f5; border-radius:10px; padding:1rem; margin-bottom:0.75rem; }
 .now-playing.show { display:block; }
 .np-label { font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.3rem; }
-.np-note  { font-size:30px;font-weight:800;color:#667eea;line-height:1;font-family:'Courier New',monospace; }
+.np-note  { font-size:30px;font-weight:800;color:#667eea;line-height:1; }
+.np-sub   { font-size:12px;color:#999;font-family:'Courier New',monospace;margin-top:2px;min-height:16px; }
 .np-ctx   { font-size:12px;color:#999;margin-top:0.25rem; }
 .np-bar   { height:4px;background:#e8eaff;border-radius:2px;margin-top:0.75rem;overflow:hidden; }
 .np-fill  { height:100%;background:linear-gradient(90deg,#667eea,#764ba2);width:0%;transition:width 0.1s linear;border-radius:2px; }
-
 .status-line { font-size:13px;color:#999;font-style:italic;min-height:18px;margin-bottom:0.75rem; }
 
 /* ── Measure list ── */
 .measure-scroll { max-height:300px;overflow-y:auto;border:1px solid #e4e6f5;border-radius:10px;background:#fff; }
-.measure-item {
-  display:flex;align-items:center;gap:10px;padding:8px 13px;
-  border-bottom:1px solid #f0f2ff;cursor:pointer;transition:background 0.1s;
-}
+.measure-item { display:flex;align-items:center;gap:10px;padding:8px 13px; border-bottom:1px solid #f0f2ff;cursor:pointer;transition:background 0.1s; }
 .measure-item:last-child { border-bottom:none; }
 .measure-item:hover  { background:#f3f0ff; }
 .measure-item.active { background:#ede9ff; }
 .measure-item.active .m-num { color:#667eea; font-weight:700; }
-.m-num   { font-size:13px;color:#aaa;min-width:26px;font-weight:600; }
-.m-notes { flex:1;overflow:hidden;display:flex;flex-direction:column;gap:1px;min-width:0; }
-.m-lyric { font-size:13px;color:#667eea;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-.m-notestr { font-size:11px;color:#bbb;font-family:'Courier New',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-
+.m-num    { font-size:13px;color:#aaa;min-width:26px;font-weight:600; }
+.m-notes  { flex:1;overflow:hidden;display:flex;flex-direction:column;gap:1px;min-width:0; }
+.m-lyric  { font-size:13px;color:#667eea;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.m-notestr{ font-size:11px;color:#bbb;font-family:'Courier New',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.m-play   { font-size:11px;color:#aaa;padding:2px 8px;border:1px solid #e0e3f8;border-radius:5px;background:#f8f9ff; }
 .empty-hint { text-align:center;padding:2rem 1rem;color:#bbb;font-size:13px;font-style:italic; }
 
 @media (max-width:480px) {
@@ -248,17 +215,31 @@ body {
 
   <div class="body">
 
+    <!-- ── Onboarding ── -->
+    <div class="onboarding" id="onboarding">
+      <div class="onboarding-title">👋 Welcome! Here's how to get started</div>
+      <ol>
+        <li><strong>Find the score files</strong> — your conductor has uploaded the MuseScore files to the <strong>choir Google Drive</strong>. Download the <code>.mscz</code> file for the piece you want to practise.</li>
+        <li><strong>Load the score</strong> — drag the file into the box below, or tap it to browse.</li>
+        <li><strong>Select your voice part</strong> — tap your part (e.g. Alto, Tenor 1) to highlight it. You can select multiple parts to hear them together.</li>
+        <li><strong>Play and practise</strong> — press ▶ Play all, or tap any bar in the list to start from there. Use 🔁 Loop range to repeat a section.</li>
+      </ol>
+      <div class="tip">
+        <span>📱</span>
+        <span><strong>On iPhone or iPad:</strong> make sure the physical <strong>silence switch on the side of the phone</strong> is turned off (no orange showing), or plug in headphones. The sound will not play if the phone is silenced.</span>
+      </div>
+      <span class="onboarding-dismiss" onclick="dismissOnboarding()">Got it — dismiss this</span>
+    </div>
+
     <!-- ── Upload ── -->
     <div class="card">
       <div class="card-title">📂 Load Score</div>
-
       <div class="drop-zone" id="dropZone">
-        <input type="file" id="fileInput">
+        <input type="file" id="fileInput" accept=".mscz,.xml,.musicxml,.mxl">
         <div class="drop-zone-icon">🎼</div>
         <div class="drop-zone-title">Drop your score file here</div>
         <div class="drop-zone-hint">MuseScore .mscz · MusicXML .xml / .mxl — or tap to browse</div>
       </div>
-
       <div class="progress-wrap" id="progressWrap">
         <div class="progress-header">
           <span id="progressLabel">Loading…</span>
@@ -267,10 +248,8 @@ body {
         <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
         <div class="progress-msg"><span class="spinner"></span><span id="progressMsg"></span></div>
       </div>
-
       <div class="msg-box msg-error"   id="msgError"></div>
       <div class="msg-box msg-success" id="msgSuccess"></div>
-
       <div class="score-info" id="scoreInfo">
         <div class="score-info-title" id="scoreTitle">—</div>
         <div class="score-badges" id="scoreBadges"></div>
@@ -279,7 +258,7 @@ body {
 
     <!-- ── Voice parts ── -->
     <div class="card" id="voiceCard" style="display:none">
-      <div class="card-title">🎤 Voice Parts <span style="font-size:12px;font-weight:400;color:#999;margin-left:4px">— select one or more to practice together</span></div>
+      <div class="card-title">🎤 Voice Parts <span style="font-size:12px;font-weight:400;color:#999;margin-left:4px">— select one or more to practise together</span></div>
       <div class="voice-grid" id="voiceGrid"></div>
     </div>
 
@@ -290,7 +269,7 @@ body {
       <div class="now-playing" id="nowPlaying">
         <div class="np-label">Now playing</div>
         <div class="np-note" id="npNote">—</div>
-        <div id="npSub" style="font-size:12px;color:#999;font-family:'Courier New',monospace;margin-top:2px;min-height:16px"></div>
+        <div class="np-sub"  id="npSub"></div>
         <div class="np-ctx"  id="npCtx"></div>
         <div class="np-bar"><div class="np-fill" id="npFill"></div></div>
       </div>
@@ -298,17 +277,17 @@ body {
       <div class="status-line" id="statusLine">Select a voice part above, then press play.</div>
 
       <div class="btn-row">
-        <button class="btn btn-primary"    id="btnPlay"  onclick="playAll()"    disabled>▶ Play all</button>
-        <button class="btn btn-stop"       id="btnStop"  onclick="stopAll()"    style="display:none">⏹ Stop</button>
-        <button class="btn btn-secondary"  id="btnLoop"  onclick="toggleLoop()">🔁 Loop range</button>
-        <button class="btn btn-secondary"  id="btnMetro" onclick="toggleMetro()">🥁 Metronome</button>
+        <button class="btn btn-primary"   id="btnPlay"  onclick="playAll()"     disabled>▶ Play all</button>
+        <button class="btn btn-stop"      id="btnStop"  onclick="stopAll()"     style="display:none">⏹ Stop</button>
+        <button class="btn btn-secondary" id="btnLoop"  onclick="toggleLoop()">🔁 Loop range</button>
+        <button class="btn btn-secondary" id="btnMetro" onclick="toggleMetro()">🥁 Metronome</button>
       </div>
 
       <div class="loop-row" id="loopRow">
         🔁 Loop bars
         <input type="number" id="loopFrom" min="1" value="1">
         to
-        <input type="number" id="loopTo"   min="1" value="4">
+        <input type="number" id="loopTo" min="1" value="4">
         <button class="btn btn-secondary" style="padding:6px 13px;font-size:12px" onclick="playLoop()">▶ Play loop</button>
       </div>
 
@@ -316,7 +295,6 @@ body {
       <div style="margin-top:1.25rem">
         <div class="card-title" style="margin-bottom:0.9rem">⚙️ Settings</div>
         <div class="settings-grid">
-
           <div class="setting">
             <label>🎚️ Tempo (BPM)</label>
             <div class="tempo-row">
@@ -325,13 +303,11 @@ body {
             </div>
             <div class="slider-hint">drag slider or type a number</div>
           </div>
-
           <div class="setting">
             <label>🔊 Volume</label>
             <input type="range" id="volSlider" min="0" max="100" value="75" step="1" oninput="updateVol(this.value)">
             <div class="slider-hint" id="volHint">75%</div>
           </div>
-
           <div class="setting">
             <label>🎹 Tone</label>
             <select id="toneSelect" onchange="TONE=this.value">
@@ -345,59 +321,82 @@ body {
               <option value="flute">🪈 Flute</option>
             </select>
           </div>
-
         </div>
       </div>
 
-      <!-- Practice Measures -->
+      <!-- Measure list -->
       <div style="margin-top:1.25rem">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;flex-wrap:wrap">
-          <div class="card-title" style="margin-bottom:0">📋 Practice Measures</div>
-          <span style="font-size:12px;color:#999">— tap to play from there</span>
-        </div>
-        <div class="measure-scroll" id="sectionList">
+        <div class="card-title" style="margin-bottom:0.6rem">📋 Measures <span style="font-size:12px;font-weight:400;color:#999">— tap to play from that bar</span></div>
+        <div class="measure-scroll" id="measureList">
           <div class="empty-hint">Load a score to see measures</div>
         </div>
       </div>
     </div>
 
-  </div><!-- /body -->
-</div><!-- /container -->
+  </div>
+</div>
 
 <script>
-// ─── State ────────────────────────────────────────────────────────────
-let score = null;
+// ─── State ────────────────────────────────────────────────────────────────────
+let score        = null;
 let selectedParts = new Set();
-let isLooping = false;
-let metroOn   = false;
-let stopFlag  = false;
-let audioCtx  = null;
-let BPM = 90;
-let VOL = 0.75;
+let isLooping    = false;
+let metroOn      = false;
+let stopFlag     = false;
+let audioCtx     = null;
+let BPM  = 90;
+let VOL  = 0.75;
 let TONE = 'organ';
-let currentPlaybackId = null; // Track which playback is currently active
 
-// ─── Audio ctx ───────────────────────────────────────────────────────
+// ─── Onboarding ───────────────────────────────────────────────────────────────
+function dismissOnboarding() {
+  const el = document.getElementById('onboarding');
+  el.style.transition = 'opacity 0.3s';
+  el.style.opacity = '0';
+  setTimeout(() => el.style.display = 'none', 300);
+}
+
+// ─── Audio ────────────────────────────────────────────────────────────────────
 function getAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
 
-// ─── Metronome click ──────────────────────────────────────────────────
-function metroClick(downbeat) {
+// ─── Metronome ────────────────────────────────────────────────────────────────
+// Runs independently of note playback on a fixed BPM timer
+let metroInterval = null;
+let metroBeat     = 0;
+let metroBeatsPerBar = 4;
+
+function startMetronome() {
+  stopMetronome();
+  metroBeat = 0;
+  const intervalMs = (60 / BPM) * 1000;
+  // Fire immediately on beat 1
+  metroTick();
+  metroInterval = setInterval(metroTick, intervalMs);
+}
+
+function stopMetronome() {
+  if (metroInterval) { clearInterval(metroInterval); metroInterval = null; }
+}
+
+function metroTick() {
   const ctx = getAudio(), now = ctx.currentTime;
+  const isDown = (metroBeat % metroBeatsPerBar) === 0;
   const osc = ctx.createOscillator(), g = ctx.createGain();
   osc.connect(g); g.connect(ctx.destination);
   osc.type = 'sine';
-  osc.frequency.value = downbeat ? 1000 : 700;
+  osc.frequency.value = isDown ? 1000 : 700;
   g.gain.setValueAtTime(0.001, now);
-  g.gain.linearRampToValueAtTime(0.38, now + 0.002);
+  g.gain.linearRampToValueAtTime(0.4, now + 0.002);
   g.gain.exponentialRampToValueAtTime(0.001, now + 0.048);
-  osc.start(now); osc.stop(now + 0.05);
+  osc.start(now); osc.stop(now + 0.055);
+  metroBeat++;
 }
 
-// ─── Tone synthesizer ────────────────────────────────────────────────
+// ─── Tone synth ───────────────────────────────────────────────────────────────
 function playFreq(freq, durationSec) {
   if (!freq || freq <= 0) return;
   const ctx = getAudio(), now = ctx.currentTime;
@@ -409,8 +408,8 @@ function playFreq(freq, durationSec) {
       const master = ctx.createGain(); master.connect(ctx.destination);
       [[1,0],[2,4],[3,-3],[4,2]].forEach(([h,d]) => {
         const osc = ctx.createOscillator(), g = ctx.createGain();
-        osc.type = 'sine'; osc.frequency.value = freq*h; osc.detune.value = d;
-        const hv = vol/(h*1.4);
+        osc.type='sine'; osc.frequency.value=freq*h; osc.detune.value=d;
+        const hv=vol/(h*1.4);
         g.gain.setValueAtTime(0.001,now); g.gain.linearRampToValueAtTime(hv,now+0.005);
         g.gain.exponentialRampToValueAtTime(hv*0.3,now+0.08);
         g.gain.exponentialRampToValueAtTime(hv*0.15,now+dur*0.5);
@@ -422,8 +421,8 @@ function playFreq(freq, durationSec) {
       const master = ctx.createGain(); master.connect(ctx.destination);
       [[1,0.4],[2,0.3],[3,0.2],[4,0.15],[6,0.08]].forEach(([h,w]) => {
         const osc = ctx.createOscillator(), g = ctx.createGain();
-        osc.type = 'sine'; osc.frequency.value = freq*h;
-        const hv = vol*w;
+        osc.type='sine'; osc.frequency.value=freq*h;
+        const hv=vol*w;
         g.gain.setValueAtTime(0.001,now); g.gain.linearRampToValueAtTime(hv,now+0.01);
         g.gain.setValueAtTime(hv,now+dur-0.02); g.gain.linearRampToValueAtTime(0.001,now+dur+0.03);
         osc.connect(g); g.connect(master); osc.start(now); osc.stop(now+dur+0.05);
@@ -433,17 +432,16 @@ function playFreq(freq, durationSec) {
       const master = ctx.createGain(); master.connect(ctx.destination);
       [[1,0.7],[2,0.2]].forEach(([h,w]) => {
         const osc = ctx.createOscillator(), g = ctx.createGain();
-        osc.type = 'sine'; osc.frequency.value = freq*h;
+        osc.type='sine'; osc.frequency.value=freq*h;
         g.gain.setValueAtTime(0.001,now); g.gain.linearRampToValueAtTime(vol*w,now+0.08);
         g.gain.setValueAtTime(vol*w,now+dur-0.05); g.gain.exponentialRampToValueAtTime(0.001,now+dur+0.02);
         osc.connect(g); g.connect(master); osc.start(now); osc.stop(now+dur+0.05);
       });
-      const bufSize = ctx.sampleRate*Math.min(dur+0.1,3);
-      const nb = ctx.createBuffer(1,bufSize,ctx.sampleRate);
-      const d = nb.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1);
-      const ns = ctx.createBufferSource(); ns.buffer = nb;
-      const bp = ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=freq*1.5; bp.Q.value=0.8;
-      const ng = ctx.createGain();
+      const nb=ctx.createBuffer(1,ctx.sampleRate*Math.min(dur+0.1,3),ctx.sampleRate);
+      const dd=nb.getChannelData(0); for(let i=0;i<dd.length;i++) dd[i]=(Math.random()*2-1);
+      const ns=ctx.createBufferSource(); ns.buffer=nb;
+      const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=freq*1.5; bp.Q.value=0.8;
+      const ng=ctx.createGain();
       ng.gain.setValueAtTime(vol*0.08,now); ng.gain.linearRampToValueAtTime(vol*0.03,now+0.12);
       ng.gain.setValueAtTime(vol*0.03,now+dur-0.05); ng.gain.exponentialRampToValueAtTime(0.001,now+dur+0.02);
       ns.connect(bp); bp.connect(ng); ng.connect(master); ns.start(now); ns.stop(now+dur+0.05);
@@ -454,22 +452,22 @@ function playFreq(freq, durationSec) {
       master.gain.setValueAtTime(0.001,now); master.gain.linearRampToValueAtTime(vol*1.1,now+0.07);
       master.gain.setValueAtTime(vol*1.1,now+dur-0.08); master.gain.exponentialRampToValueAtTime(0.001,now+dur+0.05);
       master.connect(ctx.destination);
-      const src = ctx.createOscillator(); src.type='sawtooth'; src.frequency.value=freq;
-      const lfo = ctx.createOscillator(), lg = ctx.createGain();
+      const src=ctx.createOscillator(); src.type='sawtooth'; src.frequency.value=freq;
+      const lfo=ctx.createOscillator(), lg=ctx.createGain();
       lfo.frequency.value=5.2; lg.gain.value=freq*0.012;
       lfo.connect(lg); lg.connect(src.frequency); lfo.start(now+0.1); lfo.stop(now+dur+0.1);
       [[800,8,1.0],[1200,10,0.7],[2700,12,0.3]].forEach(([f,Q,fw]) => {
-        const bp = ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=f; bp.Q.value=Q;
-        const fg = ctx.createGain(); fg.gain.value=fw;
-        src.connect(bp); bp.connect(fg); fg.connect(master);
+        const bpf=ctx.createBiquadFilter(); bpf.type='bandpass'; bpf.frequency.value=f; bpf.Q.value=Q;
+        const fg=ctx.createGain(); fg.gain.value=fw;
+        src.connect(bpf); bpf.connect(fg); fg.connect(master);
       });
       src.start(now); src.stop(now+dur+0.1);
       break;
     }
     default: {
-      const osc = ctx.createOscillator(), g = ctx.createGain();
+      const osc=ctx.createOscillator(), g=ctx.createGain();
       osc.connect(g); g.connect(ctx.destination);
-      osc.type = TONE; osc.frequency.value = freq;
+      osc.type=TONE; osc.frequency.value=freq;
       g.gain.setValueAtTime(0.001,now); g.gain.linearRampToValueAtTime(vol,now+0.015);
       g.gain.exponentialRampToValueAtTime(vol*0.6,now+dur*0.55);
       g.gain.exponentialRampToValueAtTime(0.001,now+dur*0.95);
@@ -478,60 +476,41 @@ function playFreq(freq, durationSec) {
   }
 }
 
-// ─── Note helpers ────────────────────────────────────────────────────
+// ─── Note helpers ─────────────────────────────────────────────────────────────
 const NOTE_ST = {C:0,D:2,E:4,F:5,G:7,A:9,B:11};
 function noteToFreq(step,alter,octave){ return 440*Math.pow(2,(NOTE_ST[step]+(alter||0)+(octave+1)*12-69)/12); }
 function noteLabel(step,alter,octave){ return step+(alter===1?'♯':alter===-1?'♭':'')+octave; }
 function midiToFreq(m){ return 440*Math.pow(2,(m-69)/12); }
-function midiToLabel(m){ return ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'][m%12]+( Math.floor(m/12)-1); }
+function midiToLabel(m){ return ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'][m%12]+(Math.floor(m/12)-1); }
 
-// Improved duration calculation with better dotted note and ligature handling
 function durTypeBeats(type, el) {
-  const map = {
-    whole:4, half:2, quarter:1, eighth:0.5, '16th':0.25, '32nd':0.125, '64th':0.0625,
-    breve:8, long:16
-  };
-  
-  // Try to get ticks value (most accurate for MuseScore, handles ligatures and dots properly)
+  const map = { whole:4, half:2, quarter:1, eighth:0.5, '16th':0.25, '32nd':0.125, '64th':0.0625, breve:8, long:16 };
+  // MuseScore ticks are the most reliable — 480 ticks = 1 quarter note
   const ticksEl = el?.querySelector?.('ticks');
-  if (ticksEl) {
-    const ticks = parseInt(ticksEl.textContent);
-    if (!isNaN(ticks) && ticks > 0) {
-      // Standard: 480 ticks = quarter note (1 beat)
-      return ticks / 480;
-    }
-  }
-  
-  // Fallback to duration type mapping with proper dot handling
+  if (ticksEl) { const t=parseInt(ticksEl.textContent); if(!isNaN(t)&&t>0) return t/480; }
   let beats = map[type] || 1;
-  
-  // Handle dots (each dot adds half of the previous duration)
+  // Dots: each dot adds half the previous augmentation
   const dotsEl = el?.querySelector?.('dots');
   if (dotsEl) {
-    const dots = parseInt(dotsEl.textContent) || 0;
-    for (let i = 0; i < dots; i++) {
-      beats += beats / Math.pow(2, i + 1);
-    }
+    const dots = parseInt(dotsEl.textContent)||0;
+    let add = beats / 2;
+    for (let i=0; i<dots; i++) { beats += add; add /= 2; }
   }
-  
   return beats;
 }
 
-// ─── Voice type recognition ────────────────────────────────────────────────
+// ─── Voice recognition ────────────────────────────────────────────────────────
 const VOICE_TYPES = [
-  { re:/soprano\s*i(?!i)|sop\.?\s*1|s\.?\s*1\b|soprano\s*1/i,  css:'soprano',  emoji:'👑', label:'Soprano I'   },
-  { re:/soprano\s*ii|sop\.?\s*2|s\.?\s*2\b|soprano\s*2/i,       css:'soprano',  emoji:'👑', label:'Soprano II'  },
-  { re:/mezzo[\s-]?soprano|mezzo|mez\b|m\.s\b/i,                 css:'mezzo',    emoji:'🌸', label:'Mezzo'       },
-  { re:/\balto\b|alt\b/i,                                         css:'alto',     emoji:'🎵', label:'Alto'        },
-  { re:/\btenor\b|ten\b/i,                                        css:'tenor',    emoji:'🎶', label:'Tenor'       },
-  { re:/baritone|bari\b|bar\b/i,                                  css:'baritone', emoji:'🎸', label:'Baritone'    },
-  { re:/\bbass\b|bas\b/i,                                         css:'bass',     emoji:'🔊', label:'Bass'        },
+  { re:/soprano\s*i(?!i)|sop\.?\s*1|s\.?\s*1\b|soprano\s*1/i,  css:'soprano',  emoji:'👑', label:'Soprano I'  },
+  { re:/soprano\s*ii|sop\.?\s*2|s\.?\s*2\b|soprano\s*2/i,       css:'soprano',  emoji:'👑', label:'Soprano II' },
+  { re:/mezzo[\s-]?soprano|mezzo|mez\b|m\.s\b/i,                 css:'mezzo',    emoji:'🌸', label:'Mezzo'      },
+  { re:/\balto\b|alt\b/i,                                         css:'alto',     emoji:'🎵', label:'Alto'       },
+  { re:/\btenor\b|ten\b/i,                                        css:'tenor',    emoji:'🎶', label:'Tenor'      },
+  { re:/baritone|bari\b|bar\b/i,                                  css:'baritone', emoji:'🎸', label:'Baritone'   },
+  { re:/\bbass\b|bas\b/i,                                         css:'bass',     emoji:'🔊', label:'Bass'       },
 ];
-
 function detectVoiceType(name) {
-  for (const v of VOICE_TYPES) {
-    if (v.re.test(name)) return v;
-  }
+  for (const v of VOICE_TYPES) { if (v.re.test(name)) return v; }
   return { css:'other', emoji:'🎼', label:null };
 }
 
@@ -539,9 +518,8 @@ function detectVoiceType(name) {
 async function parseMSCZ(buf) {
   const zip = await JSZip.loadAsync(buf);
   for (const fname of Object.keys(zip.files)) {
-    if (fname.endsWith('.mscx') && !zip.files[fname].dir) {
+    if (fname.endsWith('.mscx') && !zip.files[fname].dir)
       return parseMSCX(await zip.files[fname].async('string'));
-    }
   }
   throw new Error('No .mscx found inside .mscz');
 }
@@ -557,84 +535,128 @@ function parseMSCX(xml) {
 
   let tempo = 90;
   const tempoEl = doc.querySelector('Tempo');
-  if (tempoEl) { const bps = parseFloat(tempoEl.textContent); if (bps > 0) tempo = Math.round(bps * 60); }
+  if (tempoEl) { const bps=parseFloat(tempoEl.textContent); if(bps>0) tempo=Math.round(bps*60); }
 
-  let beats = 4, beatType = 4;
+  let beats=4, beatType=4;
   const ts = doc.querySelector('TimeSig');
-  if (ts) { beats = parseInt(ts.querySelector('sigN')?.textContent)||4; beatType = parseInt(ts.querySelector('sigD')?.textContent)||4; }
+  if (ts) { beats=parseInt(ts.querySelector('sigN')?.textContent)||4; beatType=parseInt(ts.querySelector('sigD')?.textContent)||4; }
 
+  // Staff id → part name (MuseScore 4: Staff children of Part have no id attr,
+  // they are numbered sequentially across all Parts in document order)
   const partNameByStaffId = {};
   let staffCounter = 1;
   doc.querySelectorAll('Score > Part').forEach(partEl => {
     const raw = (
       partEl.querySelector(':scope > trackName')?.textContent ||
       partEl.querySelector('Instrument > longName')?.textContent ||
-      partEl.querySelector('Instrument > shortName')?.textContent ||
-      ''
+      partEl.querySelector('Instrument > shortName')?.textContent || ''
     ).trim();
-    const staffCount = partEl.querySelectorAll('Staff').length || 1;
-    for (let i = 0; i < staffCount; i++) {
-      partNameByStaffId[String(staffCounter++)] = raw;
-    }
+    const count = partEl.querySelectorAll('Staff').length || 1;
+    for (let i=0; i<count; i++) partNameByStaffId[String(staffCounter++)] = raw;
   });
 
   const parts = [];
   doc.querySelectorAll('Score > Staff').forEach(staffEl => {
-    const staffId = staffEl.getAttribute('id');
-    const rawName = partNameByStaffId[staffId] || ('Staff ' + staffId);
+    const staffId  = staffEl.getAttribute('id');
+    const rawName  = partNameByStaffId[staffId] || ('Staff ' + staffId);
     const measures = [];
+
     staffEl.querySelectorAll('Measure').forEach((mEl, idx) => {
       const notes = [];
       const voiceEls = mEl.querySelectorAll('voice');
       const container = voiceEls.length > 0 ? voiceEls[0] : mEl;
 
+      // Track ties: noteId → true means this note is the continuation of a tie
+      // In MSCX, a tie is expressed as <Spanner type="Tie"> inside <Note>
+      // The tied-into note also has a <Spanner type="Tie"><prev>…</prev></Spanner>
+      // We detect the *start* of a tie by checking for <next> inside the Spanner,
+      // and the *continuation* by checking for <prev> only (no <next>).
+      // Strategy: merge tied consecutive notes by accumulating beats.
+
+      let pendingTie = false; // next chord should extend the previous note
+
       for (const child of container.children) {
         if (child.tagName === 'Rest') {
+          pendingTie = false;
           notes.push({ rest:true, beats: durTypeBeats(child.querySelector('durationType')?.textContent, child) });
+
         } else if (child.tagName === 'Chord') {
           const dtype = child.querySelector('durationType')?.textContent;
           let bv = durTypeBeats(dtype, child);
-          const freqs=[],labels=[];
+
+          // Check if any Note in this chord starts a tie (has Spanner type=Tie with <next>)
+          // or is the continuation of a tie (has Spanner type=Tie with <prev> but no <next>)
+          let isTiedFrom = false; // this chord is the continuation of a previous tie
+          let startsTie  = false; // this chord begins a tie into the next
+
+          child.querySelectorAll('Note').forEach(nEl => {
+            nEl.querySelectorAll('Spanner').forEach(sp => {
+              if (sp.getAttribute('type') === 'Tie') {
+                if (sp.querySelector('next'))  startsTie  = true;
+                if (sp.querySelector('prev') && !sp.querySelector('next')) isTiedFrom = true;
+              }
+            });
+          });
+
+          if (isTiedFrom && notes.length > 0) {
+            // Extend the last non-rest note's duration instead of adding a new note
+            const last = notes[notes.length - 1];
+            if (!last.rest) {
+              last.beats += bv;
+              // Keep startsTie state — if this tied note also ties forward, mark it
+              if (!startsTie) pendingTie = false;
+              continue; // don't push a new note
+            }
+          }
+
+          pendingTie = startsTie;
+
+          const freqs=[], labels=[];
           child.querySelectorAll('Note').forEach(nEl => {
             const p = nEl.querySelector('pitch');
             if (!p) return;
             const midi = parseInt(p.textContent);
-            freqs.push(midiToFreq(midi)); labels.push(midiToLabel(midi));
+            freqs.push(midiToFreq(midi));
+            labels.push(midiToLabel(midi));
           });
+
           const lyricEl = child.querySelector('Lyrics > text');
-          const lyric = lyricEl?.textContent?.trim() || null;
-          if (freqs.length) notes.push({ rest:false, freq:freqs[0], label:labels[0], chord:freqs.length>1?freqs:null, chordLabels:labels.length>1?labels:null, beats:bv, lyric });
+          const lyric   = lyricEl?.textContent?.trim() || null;
+
+          if (freqs.length) notes.push({
+            rest: false, freq: freqs[0], label: labels[0],
+            chord: freqs.length>1 ? freqs : null,
+            chordLabels: labels.length>1 ? labels : null,
+            beats: bv, lyric
+          });
         }
       }
       measures.push({ number: idx+1, notes });
     });
 
-    if (measures.some(m=>m.notes.some(n=>!n.rest))) {
+    if (measures.some(m => m.notes.some(n => !n.rest)))
       parts.push({ id:staffId, name:rawName, measures });
-    }
   });
 
-  const seen={};
-  parts.forEach(p=>{ seen[p.name]=(seen[p.name]||0)+1; });
-  const idx={};
-  parts.forEach(p=>{ if(seen[p.name]>1){ idx[p.name]=(idx[p.name]||0)+1; p.name=p.name+' '+idx[p.name]; } });
+  // Deduplicate names
+  const seen={}, idx={};
+  parts.forEach(p => { seen[p.name]=(seen[p.name]||0)+1; });
+  parts.forEach(p => { if(seen[p.name]>1){ idx[p.name]=(idx[p.name]||0)+1; p.name=p.name+' '+idx[p.name]; } });
 
   return { title, tempo, beats, beatType, parts };
 }
 
-// ─── MusicXML parser ────────────────────────────────────────────────────────
+// ─── MusicXML parser ──────────────────────────────────────────────────────────
 function parseMusicXML(xml) {
   const doc = new DOMParser().parseFromString(xml,'text/xml');
   if (doc.querySelector('parsererror')) throw new Error('XML parse error');
-
-  const title = (doc.querySelector('work-title')?.textContent || doc.querySelector('movement-title')?.textContent || 'Untitled').trim();
+  const title=(doc.querySelector('work-title')?.textContent||doc.querySelector('movement-title')?.textContent||'Untitled').trim();
   let tempo=90;
   const se=doc.querySelector('sound[tempo]'); if(se) tempo=parseFloat(se.getAttribute('tempo'));
   const pm=doc.querySelector('per-minute');   if(pm) tempo=parseFloat(pm.textContent)||tempo;
   let beats=4,beatType=4;
   const ts=doc.querySelector('time');
   if(ts){ beats=parseInt(ts.querySelector('beats')?.textContent)||4; beatType=parseInt(ts.querySelector('beat-type')?.textContent)||4; }
-
   const parts=[];
   doc.querySelectorAll('score-part').forEach(pEl=>{
     const id=pEl.getAttribute('id');
@@ -644,17 +666,22 @@ function parseMusicXML(xml) {
     partData.querySelectorAll('measure').forEach(mEl=>{
       const mn=parseInt(mEl.getAttribute('number'))||(measures.length+1);
       const de=mEl.querySelector('divisions'); if(de) divisions=parseInt(de.textContent)||1;
-      const se=mEl.querySelector('sound[tempo]'); if(se) tempo=parseFloat(se.getAttribute('tempo'));
+      const sv=mEl.querySelector('sound[tempo]'); if(sv) tempo=parseFloat(sv.getAttribute('tempo'));
       const notes=[];
+      let tiedPitch=null; // pitch of note currently being tied
       mEl.querySelectorAll('note').forEach(nEl=>{
         const isRest=!!nEl.querySelector('rest'), isChord=!!nEl.querySelector('chord');
         const dur=(parseInt(nEl.querySelector('duration')?.textContent)||divisions)/divisions;
-        if(isRest){ if(!isChord) notes.push({rest:true,beats:dur}); return; }
+        const tieStart=nEl.querySelector('tie[type="start"]');
+        const tieStop =nEl.querySelector('tie[type="stop"]');
+        if(isRest){ tiedPitch=null; if(!isChord) notes.push({rest:true,beats:dur}); return; }
         const pe=nEl.querySelector('pitch'); if(!pe) return;
         const step=pe.querySelector('step')?.textContent||'C';
         const alter=parseFloat(pe.querySelector('alter')?.textContent)||0;
         const octave=parseInt(pe.querySelector('octave')?.textContent)||4;
         const freq=noteToFreq(step,alter,octave), label=noteLabel(step,alter,octave);
+        if(tieStop && notes.length){ const last=notes[notes.length-1]; if(!last.rest){ last.beats+=dur; if(!tieStart) tiedPitch=null; return; } }
+        if(tieStart) tiedPitch=freq; else tiedPitch=null;
         if(isChord&&notes.length){ const last=notes[notes.length-1]; (last.chord=last.chord||[last.freq]).push(freq); (last.chordLabels=last.chordLabels||[last.label]).push(label); }
         else notes.push({rest:false,freq,label,beats:dur});
       });
@@ -665,13 +692,13 @@ function parseMusicXML(xml) {
   return {title,tempo,beats,beatType,parts};
 }
 
-// ─── File loading ────────────────────────────────────────────────────────
-const dropZone  = document.getElementById('dropZone');
-const fileInput = document.getElementById('fileInput');
-fileInput.addEventListener('change', e => { if(e.target.files[0]) loadFile(e.target.files[0]); });
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-dropZone.addEventListener('dragleave',e => { e.preventDefault(); dropZone.classList.remove('drag-over'); });
-dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+// ─── File loading ─────────────────────────────────────────────────────────────
+const dropZone=document.getElementById('dropZone');
+const fileInput=document.getElementById('fileInput');
+fileInput.addEventListener('change',e=>{ if(e.target.files[0]) loadFile(e.target.files[0]); });
+dropZone.addEventListener('dragover',e=>{ e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave',e=>{ e.preventDefault(); dropZone.classList.remove('drag-over'); });
+dropZone.addEventListener('drop',e=>{ e.preventDefault(); dropZone.classList.remove('drag-over'); if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
 
 function prog(pct,label,msg){
   document.getElementById('progressWrap').classList.add('show');
@@ -715,12 +742,10 @@ async function loadFile(file) {
     }
     prog(95,'Building score…','Almost ready…');
     setTimeout(()=>{ renderScore(); hideProgress(); showOk('Score loaded — '+score.parts.length+' part(s) found'); },200);
-  } catch(err){
-    prog(100,'Error',''); showErr('Could not load this file: '+err.message); console.error(err);
-  }
+  } catch(err){ prog(100,'Error',''); showErr('Could not load this file: '+err.message); console.error(err); }
 }
 
-// ─── Render ────────────────────────────────────────────────────────
+// ─── Render ───────────────────────────────────────────────────────────────────
 function renderScore(){
   if(!score) return;
   document.getElementById('scoreTitle').textContent=score.title;
@@ -732,11 +757,12 @@ function renderScore(){
   document.getElementById('scoreInfo').classList.add('show');
 
   BPM=Math.min(200,Math.max(30,Math.round(score.tempo)));
+  metroBeatsPerBar=score.beats||4;
   document.getElementById('tempoSlider').value=BPM;
   document.getElementById('tempoNum').value=BPM;
 
   const grid=document.getElementById('voiceGrid'); grid.innerHTML='';
-  if(!score.parts.length){ showErr('No voice parts found in this score.'); return; }
+  if(!score.parts.length){ showErr('No voice parts found.'); return; }
 
   score.parts.forEach((part,idx)=>{
     const vt=detectVoiceType(part.name);
@@ -753,8 +779,7 @@ function renderScore(){
       </div>`;
     chip.addEventListener('click',e=>{
       if(e.target.tagName==='INPUT') return;
-      const cb=chip.querySelector('input');
-      cb.checked=!cb.checked; togglePart(idx,cb.checked);
+      const cb=chip.querySelector('input'); cb.checked=!cb.checked; togglePart(idx,cb.checked);
     });
     grid.appendChild(chip);
   });
@@ -776,184 +801,180 @@ function togglePart(idx,checked){
     c.classList.toggle('active',selectedParts.has(parseInt(c.dataset.idx)));
   });
   document.getElementById('btnPlay').disabled=selectedParts.size===0;
+  // Stop playback immediately when selection changes
+  stopAll();
   if(selectedParts.size>0){ renderMeasures(); setStatus(selectedParts.size+' part(s) selected. Ready to play.'); }
   else { renderMeasures(); setStatus('Select a voice part above, then press play.'); }
 }
 
 function renderMeasures(){
-  const list = document.getElementById('sectionList');
-  if (!score || !selectedParts.size) {
-    list.innerHTML = '<div class="empty-hint">Select a voice part to see measures</div>';
-    return;
-  }
-
-  const refPi = Array.from(selectedParts)[0];
-  const refPart = score.parts[refPi];
-  
-  const measures = refPart.measures.map((m, mi) => {
-    // Collect lyrics from all selected parts for this measure
-    const allLyrics = [];
-    selectedParts.forEach(pi => {
-      (score.parts[pi]?.measures[mi]?.notes || []).forEach(n => {
-        if (n.lyric && !allLyrics.includes(n.lyric)) {
-          allLyrics.push(n.lyric);
-        }
-      });
-    });
-    
-    const lyricText = allLyrics.join(' ') || '—';
-    const noteStr = (m.notes || [])
-      .filter(n => !n.rest).slice(0, 3).map(n => n.label).join(' ');
-    
-    return `<div class="measure-item" onclick="playFromMeasure(${mi})">
+  const list=document.getElementById('measureList');
+  if(!score||!selectedParts.size){ list.innerHTML='<div class="empty-hint">Select a voice part to see measures</div>'; return; }
+  const refPi=Array.from(selectedParts)[0];
+  const refPart=score.parts[refPi];
+  list.innerHTML=refPart.measures.map((m,mi)=>{
+    const lyrics=[...new Set(
+      Array.from(selectedParts).flatMap(pi=>(score.parts[pi]?.measures[mi]?.notes||[]).map(n=>n.lyric).filter(Boolean))
+    )].join(' ');
+    const noteStr=(m.notes||[]).filter(n=>!n.rest).slice(0,4).map(n=>n.label).join(' ');
+    return `<div class="measure-item" id="mi${mi}" onclick="playFromMeasure(${mi})">
       <span class="m-num">${m.number}</span>
       <div class="m-notes">
-        <span class="m-lyric">${lyricText}</span>
-        ${noteStr ? `<span class="m-notestr">${noteStr}</span>` : ''}
+        <span class="m-lyric">${lyrics||'—'}</span>
+        ${noteStr?`<span class="m-notestr">${noteStr}</span>`:''}
       </div>
+      <span class="m-play">▶</span>
     </div>`;
   }).join('');
-
-  list.innerHTML = measures || '<div class="empty-hint">No measures found</div>';
 }
 
-function setStatus(msg) { document.getElementById('statusLine').textContent = msg; }
+// ─── Playback ─────────────────────────────────────────────────────────────────
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const beatDur=()=>60/BPM;
 
-// ─── Playback ─────────────────────────────────────────────────────
-async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+async function playMeasures(fromMi, toMi) {
+  const ap = selectedParts;
+  if (!score || !ap.size) return;
+  const fp = score.parts[Array.from(ap)[0]];
+  toMi = toMi ?? fp.measures.length - 1;
 
-function showPlay(yes) {
-  document.getElementById('btnPlay').style.display=yes?'none':'inline-flex';
-  document.getElementById('btnStop').style.display=yes?'inline-flex':'none';
-}
+  for (let mi = fromMi; mi <= toMi; mi++) {
+    if (stopFlag) return;
+    hlMeasure(mi);
+    const maxN = fp.measures[mi]?.notes.length || 0;
 
-function playAll() {
-  if (!score || !selectedParts.size) return;
-  stopAll(); // Stop any existing playback first
-  currentPlaybackId = Math.random();
-  const playbackId = currentPlaybackId;
-  setTimeout(() => {
-    if (currentPlaybackId === playbackId) {
-      runPlayback(Array.from(selectedParts), 0, null, 1);
-    }
-  }, 50);
-}
+    for (let ni = 0; ni < maxN; ni++) {
+      if (stopFlag) return;
+      const tn  = fp.measures[mi].notes[ni];
+      const dur = Math.max(0.05, tn.beats * beatDur());
 
-function playLoop() {
-  const from = parseInt(document.getElementById('loopFrom').value) || 1;
-  const to = parseInt(document.getElementById('loopTo').value) || 4;
-  const refPi = Array.from(selectedParts)[0];
-  const refPart = score.parts[refPi];
-  if (!refPart) return;
-  
-  stopAll(); // Stop any existing playback first
-  currentPlaybackId = Math.random();
-  const playbackId = currentPlaybackId;
-  setTimeout(() => {
-    if (currentPlaybackId === playbackId) {
-      runPlayback(Array.from(selectedParts), from - 1, to - 1, 1);
-    }
-  }, 50);
-}
+      // Play all selected parts simultaneously
+      ap.forEach(pi => {
+        const n = score.parts[pi]?.measures[mi]?.notes[ni];
+        if (!n || n.rest) return;
+        if (n.chord) n.chord.forEach(f => playFreq(f, dur * 0.92));
+        else playFreq(n.freq, dur * 0.92);
+      });
 
-function playFromMeasure(mi) {
-  if (!score || !selectedParts.size) return;
-  stopAll(); // Stop any existing playback first
-  currentPlaybackId = Math.random();
-  const playbackId = currentPlaybackId;
-  setTimeout(() => {
-    if (currentPlaybackId === playbackId) {
-      runPlayback(Array.from(selectedParts), mi, null, 1);
-    }
-  }, 50);
-}
+      // Now-playing display
+      const lbl = Array.from(ap).map(pi => {
+        const n = score.parts[pi]?.measures[mi]?.notes[ni];
+        return (!n||n.rest) ? null : (n.chordLabels ? n.chordLabels.join('+') : n.label);
+      }).filter(Boolean).join(' / ');
+      const lyric = fp.measures[mi].notes[ni]?.lyric || null;
+      document.getElementById('npNote').textContent = lyric || lbl || '—';
+      document.getElementById('npSub').textContent  = lyric ? lbl : '';
+      document.getElementById('npCtx').textContent  = `Bar ${fp.measures[mi].number}`;
+      document.getElementById('npFill').style.width = ((ni / Math.max(1,maxN)) * 100) + '%';
 
-async function runPlayback(partIndices, startMeasure = 0, endMeasure = null, loops = 1) {
-  if (!score) return;
-  
-  showPlay(true);
-  
-  for (let loop = 0; loop < loops && currentPlaybackId; loop++) {
-    const refPart = score.parts[partIndices[0]];
-    const measureCount = refPart.measures.length;
-    const end = endMeasure !== null ? Math.min(endMeasure, measureCount - 1) : measureCount - 1;
-    
-    for (let mi = startMeasure; mi <= end && currentPlaybackId; mi++) {
-      const measure = refPart.measures[mi];
-      setStatus(`▶ Bar ${measure.number}/${measureCount}`);
-      document.getElementById('nowPlaying').classList.add('show');
-      
-      // Play all selected parts together
-      const promisesForMeasure = [];
-      
-      for (const partIdx of partIndices) {
-        const part = score.parts[partIdx];
-        if (!part || !part.measures[mi]) continue;
-        
-        const m = part.measures[mi];
-        const promise = (async () => {
-          for (const note of m.notes) {
-            if (!currentPlaybackId) return;
-            if (note.rest) {
-              const dur = (note.beats * 60) / BPM;
-              await sleep(dur * 1000);
-            } else {
-              if (metroOn) metroClick(true);
-              const dur = (note.beats * 60) / BPM;
-              document.getElementById('npNote').textContent = note.label;
-              playFreq(note.freq, dur);
-              await sleep(dur * 1000);
-            }
-          }
-        })();
-        promisesForMeasure.push(promise);
-      }
-      
-      await Promise.all(promisesForMeasure);
+      await sleep(dur * 1000);
     }
   }
-  
-  stopAll();
+}
+
+async function playAll() {
+  if (!score || !selectedParts.size) return;
+  stopFlag = true; await sleep(60); stopFlag = false;
+  const fp = score.parts[Array.from(selectedParts)[0]];
+  showPlay(true);
+  if (metroOn) { metroBeatsPerBar=score.beats||4; startMetronome(); }
+  setStatus('▶ Playing…');
+  await playMeasures(0);
+  if (!stopFlag) { stopAll(); setStatus('Playback complete. 🎉'); }
+}
+
+async function playFromMeasure(start) {
+  if (!score || !selectedParts.size) return;
+  stopFlag = true; await sleep(60); stopFlag = false;
+  const fp = score.parts[Array.from(selectedParts)[0]];
+  showPlay(true);
+  if (metroOn) { metroBeatsPerBar=score.beats||4; startMetronome(); }
+  setStatus('▶ Playing from bar ' + fp.measures[start].number + '…');
+  await playMeasures(start);
+  if (!stopFlag) { stopAll(); setStatus('Playback complete. 🎉'); }
+}
+
+async function playLoop() {
+  if (!score || !selectedParts.size) return;
+  stopFlag = true; await sleep(60); stopFlag = false;
+  const fp   = score.parts[Array.from(selectedParts)[0]];
+  const from = Math.max(0, parseInt(document.getElementById('loopFrom').value)||1) - 1;
+  const to   = Math.min(fp.measures.length-1, parseInt(document.getElementById('loopTo').value)||4) - 1;
+  showPlay(true);
+  if (metroOn) { metroBeatsPerBar=score.beats||4; startMetronome(); }
+  setStatus('🔁 Looping bars ' + (from+1) + '–' + (to+1) + '…');
+  while (isLooping && !stopFlag) {
+    await playMeasures(from, to);
+    if (!isLooping || stopFlag) break;
+    await sleep(120);
+  }
+  if (!stopFlag) { stopAll(); setStatus('Loop ended.'); }
 }
 
 function stopAll() {
-  currentPlaybackId = null;
+  stopFlag = true;
+  stopMetronome();
+  isLooping = false;
+  document.getElementById('btnLoop').classList.remove('btn-active');
+  document.getElementById('loopRow').classList.remove('show');
   showPlay(false);
-  document.getElementById('nowPlaying').classList.remove('show');
-  document.getElementById('npNote').textContent = '—';
-  setStatus('Stopped.');
+  hlMeasure(null);
+  document.getElementById('npFill').style.width='0%';
 }
 
 function toggleLoop() {
   isLooping = !isLooping;
-  document.getElementById('loopRow').classList.toggle('show');
-  document.getElementById('btnLoop').classList.toggle('btn-active');
+  document.getElementById('btnLoop').classList.toggle('btn-active', isLooping);
+  document.getElementById('loopRow').classList.toggle('show', isLooping);
+  if (!isLooping) stopAll();
+  else setStatus('🔁 Set bar range then press ▶ Play loop');
 }
 
 function toggleMetro() {
   metroOn = !metroOn;
-  document.getElementById('btnMetro').classList.toggle('btn-active');
+  document.getElementById('btnMetro').classList.toggle('btn-active', metroOn);
+  setStatus(metroOn ? '🥁 Metronome on' : 'Metronome off');
+  // If already playing, start/stop the metro immediately
+  if (metroOn && document.getElementById('btnStop').style.display !== 'none') {
+    metroBeatsPerBar = score?.beats || 4;
+    startMetronome();
+  } else if (!metroOn) {
+    stopMetronome();
+  }
 }
 
-function syncTempo(src, val) {
-  BPM = Math.max(30, Math.min(200, parseInt(val)));
-  if (src === 'slider') {
-    document.getElementById('tempoNum').value = BPM;
-  } else {
-    document.getElementById('tempoSlider').value = BPM;
+// ─── UI helpers ───────────────────────────────────────────────────────────────
+function showPlay(p) {
+  document.getElementById('btnPlay').style.display = p ? 'none' : 'inline-flex';
+  document.getElementById('btnStop').style.display = p ? 'inline-flex' : 'none';
+  document.getElementById('nowPlaying').classList.toggle('show', p);
+}
+
+function hlMeasure(idx) {
+  document.querySelectorAll('.measure-item').forEach((el,i) => el.classList.toggle('active', i===idx));
+  if (idx !== null) document.getElementById('mi'+idx)?.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+
+function setStatus(m) { document.getElementById('statusLine').textContent = m; }
+
+function syncTempo(src, v) {
+  BPM = Math.min(200, Math.max(30, parseInt(v)||90));
+  if (src !== 'slider') document.getElementById('tempoSlider').value = BPM;
+  if (src !== 'num')    document.getElementById('tempoNum').value    = BPM;
+  // Restart metronome at new tempo if running
+  if (metroOn && metroInterval) {
+    stopMetronome();
+    startMetronome();
   }
-  document.getElementById('tempoValue').textContent = '♩ = ' + BPM;
 }
 
 function clampTempo() {
-  const v = parseInt(document.getElementById('tempoNum').value);
-  if (isNaN(v) || v < 30) document.getElementById('tempoNum').value = 30;
-  else if (v > 200) document.getElementById('tempoNum').value = 200;
-  syncTempo('num', document.getElementById('tempoNum').value);
+  const v = parseInt(document.getElementById('tempoNum').value)||90;
+  syncTempo('num', v);
 }
 
 function updateVol(v) {
-  VOL = Math.max(0, Math.min(1, parseInt(v) / 100));
+  VOL = parseInt(v) / 100;
   document.getElementById('volHint').textContent = v + '%';
 }
 </script>
