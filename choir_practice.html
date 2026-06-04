@@ -235,7 +235,7 @@ body {
     <div class="card">
       <div class="card-title">📂 Load Score</div>
       <div class="drop-zone" id="dropZone">
-        <input type="file" id="fileInput" accept=".mscz,.xml,.musicxml,.mxl">
+        <input type="file" id="fileInput">
         <div class="drop-zone-icon">🎼</div>
         <div class="drop-zone-title">Drop your score file here</div>
         <div class="drop-zone-hint">MuseScore .mscz · MusicXML .xml / .mxl — or tap to browse</div>
@@ -298,8 +298,8 @@ body {
           <div class="setting">
             <label>🎚️ Tempo (BPM)</label>
             <div class="tempo-row">
-              <input type="range" id="tempoSlider" min="30" max="240" value="120" step="1" oninput="syncTempo('slider',this.value)">
-              <input type="number" class="tempo-num" id="tempoNum" min="30" max="240" value="120" oninput="syncTempo('num',this.value)" onblur="clampTempo()">
+              <input type="range" id="tempoSlider" min="30" max="200" value="90" step="1" oninput="syncTempo('slider',this.value)">
+              <input type="number" class="tempo-num" id="tempoNum" min="30" max="200" value="90" oninput="syncTempo('num',this.value)" onblur="clampTempo()">
             </div>
             <div class="slider-hint">drag slider or type a number</div>
           </div>
@@ -317,8 +317,8 @@ body {
               <option value="square">🔲 Hollow</option>
               <option value="vocal">🎤 Choir / Vocal</option>
               <option value="piano">🎹 Piano</option>
-              <option value="organ">🎺 Organ</option>
-              <option value="flute" selected>🪈 Flute</option>
+              <option value="organ" selected>🎺 Organ</option>
+              <option value="flute">🪈 Flute</option>
             </select>
           </div>
         </div>
@@ -344,9 +344,9 @@ let isLooping    = false;
 let metroOn      = false;
 let stopFlag     = false;
 let audioCtx     = null;
-let BPM  = 120;
+let BPM  = 90;
 let VOL  = 0.75;
-let TONE = 'flute';
+let TONE = 'organ';
 
 // ─── Onboarding ───────────────────────────────────────────────────────────────
 function dismissOnboarding() {
@@ -533,7 +533,7 @@ function parseMSCX(xml) {
                 || doc.querySelector('Title');
   const title = titleEl?.textContent?.trim() || 'Untitled';
 
-  let tempo = 120;
+  let tempo = 90;
   const tempoEl = doc.querySelector('Tempo');
   if (tempoEl) { const bps=parseFloat(tempoEl.textContent); if(bps>0) tempo=Math.round(bps*60); }
 
@@ -651,7 +651,7 @@ function parseMusicXML(xml) {
   const doc = new DOMParser().parseFromString(xml,'text/xml');
   if (doc.querySelector('parsererror')) throw new Error('XML parse error');
   const title=(doc.querySelector('work-title')?.textContent||doc.querySelector('movement-title')?.textContent||'Untitled').trim();
-  let tempo=120;
+  let tempo=90;
   const se=doc.querySelector('sound[tempo]'); if(se) tempo=parseFloat(se.getAttribute('tempo'));
   const pm=doc.querySelector('per-minute');   if(pm) tempo=parseFloat(pm.textContent)||tempo;
   let beats=4,beatType=4;
@@ -756,7 +756,7 @@ function renderScore(){
   ].join('');
   document.getElementById('scoreInfo').classList.add('show');
 
-  BPM=Math.min(240,Math.max(30,Math.round(score.tempo)));
+  BPM=Math.min(200,Math.max(30,Math.round(score.tempo)));
   metroBeatsPerBar=score.beats||4;
   document.getElementById('tempoSlider').value=BPM;
   document.getElementById('tempoNum').value=BPM;
@@ -958,7 +958,7 @@ function hlMeasure(idx) {
 function setStatus(m) { document.getElementById('statusLine').textContent = m; }
 
 function syncTempo(src, v) {
-  BPM = Math.min(240, Math.max(30, parseInt(v)||120));
+  BPM = Math.min(200, Math.max(30, parseInt(v)||90));
   if (src !== 'slider') document.getElementById('tempoSlider').value = BPM;
   if (src !== 'num')    document.getElementById('tempoNum').value    = BPM;
   // Restart metronome at new tempo if running
@@ -969,7 +969,7 @@ function syncTempo(src, v) {
 }
 
 function clampTempo() {
-  const v = parseInt(document.getElementById('tempoNum').value)||120;
+  const v = parseInt(document.getElementById('tempoNum').value)||90;
   syncTempo('num', v);
 }
 
