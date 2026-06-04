@@ -298,8 +298,8 @@ body {
           <div class="setting">
             <label>🎚️ Tempo (BPM)</label>
             <div class="tempo-row">
-              <input type="range" id="tempoSlider" min="30" max="200" value="90" step="1" oninput="syncTempo('slider',this.value)">
-              <input type="number" class="tempo-num" id="tempoNum" min="30" max="200" value="90" oninput="syncTempo('num',this.value)" onblur="clampTempo()">
+              <input type="range" id="tempoSlider" min="30" max="200" value="120" step="1" oninput="syncTempo('slider',this.value)">
+              <input type="number" class="tempo-num" id="tempoNum" min="30" max="200" value="120" oninput="syncTempo('num',this.value)" onblur="clampTempo()">
             </div>
             <div class="slider-hint">drag slider or type a number</div>
           </div>
@@ -344,7 +344,7 @@ let isLooping    = false;
 let metroOn      = false;
 let stopFlag     = false;
 let audioCtx     = null;
-let BPM  = 90;
+let BPM  = 120;
 let VOL  = 0.75;
 let TONE = 'organ';
 
@@ -533,7 +533,7 @@ function parseMSCX(xml) {
                 || doc.querySelector('Title');
   const title = titleEl?.textContent?.trim() || 'Untitled';
 
-  let tempo = 90;
+  let tempo = 120;
   const tempoEl = doc.querySelector('Tempo');
   if (tempoEl) { const bps=parseFloat(tempoEl.textContent); if(bps>0) tempo=Math.round(bps*60); }
 
@@ -651,7 +651,7 @@ function parseMusicXML(xml) {
   const doc = new DOMParser().parseFromString(xml,'text/xml');
   if (doc.querySelector('parsererror')) throw new Error('XML parse error');
   const title=(doc.querySelector('work-title')?.textContent||doc.querySelector('movement-title')?.textContent||'Untitled').trim();
-  let tempo=90;
+  let tempo=120;
   const se=doc.querySelector('sound[tempo]'); if(se) tempo=parseFloat(se.getAttribute('tempo'));
   const pm=doc.querySelector('per-minute');   if(pm) tempo=parseFloat(pm.textContent)||tempo;
   let beats=4,beatType=4;
@@ -906,7 +906,12 @@ async function playLoop() {
   while (isLooping && !stopFlag) {
     await playMeasures(from, to);
     if (!isLooping || stopFlag) break;
-    await sleep(120);
+    // 2-second gap between loops; stop metronome during the gap so it
+    // restarts cleanly on beat 1 when the next loop begins
+    stopMetronome();
+    await sleep(2000);
+    if (!isLooping || stopFlag) break;
+    if (metroOn) { metroBeat = 0; metroBeatsPerBar = score.beats||4; startMetronome(); }
   }
   if (!stopFlag) { stopAll(); setStatus('Loop ended.'); }
 }
@@ -952,7 +957,21 @@ function showPlay(p) {
 
 function hlMeasure(idx) {
   document.querySelectorAll('.measure-item').forEach((el,i) => el.classList.toggle('active', i===idx));
-  if (idx !== null) document.getElementById('mi'+idx)?.scrollIntoView({block:'nearest',behavior:'smooth'});
+  if (idx !== null) {
+    const row = document.getElementById('mi'+idx);
+    const container = document.getElementById('measureList');
+    if (row && container) {
+      const rowRect  = row.getBoundingClientRect();
+      const contRect = container.getBoundingClientRect();
+      const rowTop    = rowRect.top  - contRect.top;
+      const rowBottom = rowRect.bottom - contRect.top;
+      if (rowTop < 0) {
+        container.scrollTop += rowTop - 8;
+      } else if (rowBottom > container.clientHeight) {
+        container.scrollTop += rowBottom - container.clientHeight + 8;
+      }
+    }
+  }
 }
 
 function setStatus(m) { document.getElementById('statusLine').textContent = m; }
