@@ -27,7 +27,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .section-header{display:flex;align-items:center;gap:8px;padding:1rem 1.25rem;cursor:pointer;user-select:none;border-bottom:1px solid #e4e6f5;background:#f8f9ff;transition:background .15s}
 .section-header:hover{background:#f0f2ff}
 .section-title{font-size:15px;font-weight:700;color:#667eea;flex:1;display:flex;align-items:center;gap:6px}
-.section-chevron{font-size:13px;color:#aaa;transition:transform .25s;flex-shrink:0}
+.section-chevron{width:18px;height:18px;flex-shrink:0;transition:transform .25s;color:#aaa;display:flex;align-items:center;justify-content:center}
 .section-header.open .section-chevron{transform:rotate(180deg)}
 .section-body{padding:1.25rem 1.5rem}
 @media(max-width:600px){.section-body{padding:1rem}}
@@ -37,7 +37,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .onboarding-wrap{background:linear-gradient(135deg,#ede9ff,#f0f4ff);border:1px solid #c8cef5;border-radius:14px;overflow:hidden}
 .onboarding-header{display:flex;align-items:center;gap:8px;padding:1rem 1.25rem;cursor:pointer;user-select:none}
 .onboarding-title{font-size:15px;font-weight:700;color:#667eea;flex:1}
-.onboarding-chevron{font-size:13px;color:#aaa;transition:transform .25s}
+.onboarding-chevron{width:18px;height:18px;flex-shrink:0;transition:transform .25s;color:#aaa;display:flex;align-items:center;justify-content:center}
 .onboarding-header.open .onboarding-chevron{transform:rotate(180deg)}
 .onboarding-body{padding:0 1.25rem 1.25rem}
 .onboarding-body.collapsed{display:none}
@@ -129,10 +129,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn-stop:hover{background:#ffe0e0}
 .btn-pause{background:#fff8e6;color:#b06000;border:1px solid #f5d97a}
 .btn-pause:hover{background:#ffefc0}
-.btn-hold{background:#f0fff4;color:#1a7a3e;border:1px solid #b2f0c8}
-.btn-hold:hover{background:#d8f5e4}
-.btn-hold.holding{background:#d0ffe0;color:#0a5a28;border-color:#5ac87a;box-shadow:0 0 0 3px rgba(90,200,122,.2)}
 .btn-active{background:#ede9ff;color:#764ba2;border:1px solid #c9bcf5}
+
+/* tap-to-hear on now-playing */
+.now-playing{cursor:pointer;user-select:none}
+.now-playing:active{background:#f5f5ff}
+.np-tap-hint{font-size:10px;color:#bbb;text-align:right;margin-top:4px;font-style:italic;transition:opacity .2s}
+.now-playing.is-holding .np-tap-hint{color:#667eea}
 
 /* loop range */
 .loop-row{display:none;align-items:flex-start;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid #e4e6f5;border-radius:10px;padding:.75rem 1rem;margin-top:.75rem;font-size:13px;color:#555}
@@ -147,7 +150,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 /* settings sub-collapse */
 .settings-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;padding:.6rem 0;border-bottom:1px solid #e4e6f5;margin-bottom:1rem}
 .settings-toggle-label{font-size:14px;font-weight:700;color:#667eea;flex:1}
-.settings-chevron{font-size:12px;color:#aaa;transition:transform .25s}
+.settings-chevron{width:18px;height:18px;flex-shrink:0;transition:transform .25s;color:#aaa;display:flex;align-items:center;justify-content:center}
 .settings-toggle.open .settings-chevron{transform:rotate(180deg)}
 .settings-inner{overflow:hidden}
 .settings-inner.collapsed{display:none}
@@ -212,7 +215,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="onboarding-wrap" id="onboardingWrap">
   <div class="onboarding-header" id="onboardingHeader" onclick="toggleSection('onboarding')">
     <span class="onboarding-title">👋 Welcome! Here's how to get started</span>
-    <span class="onboarding-chevron" id="onboardingChevron">▾</span>
+    <span class="onboarding-chevron" id="onboardingChevron"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,5 8,11 13,5"/></svg></span>
   </div>
   <div class="onboarding-body onboarding" id="onboardingBody">
     <ol>
@@ -233,7 +236,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="section" id="loadSection">
   <div class="section-header open" id="loadHeader" onclick="toggleSection('load')">
     <span class="section-title">📂 Load Score</span>
-    <span class="section-chevron" id="loadChevron">▾</span>
+    <span class="section-chevron" id="loadChevron"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,5 8,11 13,5"/></svg></span>
   </div>
   <div class="section-body" id="loadBody">
     <div class="drop-zone" id="dropZone">
@@ -262,7 +265,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="section" id="voiceCard" style="display:none">
   <div class="section-header open" id="voiceHeader" onclick="toggleSection('voice')">
     <span class="section-title">🎤 Voice Parts <span style="font-size:12px;font-weight:400;color:#999;margin-left:4px">— select one or more</span></span>
-    <span class="section-chevron" id="voiceChevron">▾</span>
+    <span class="section-chevron" id="voiceChevron"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,5 8,11 13,5"/></svg></span>
   </div>
   <div class="section-body" id="voiceBody">
     <div class="voice-grid" id="voiceGrid"></div>
@@ -273,12 +276,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="section" id="playbackCard" style="display:none">
   <div class="section-header open" id="playbackHeader" onclick="toggleSection('playback')">
     <span class="section-title">▶️ Playback</span>
-    <span class="section-chevron" id="playbackChevron">▾</span>
+    <span class="section-chevron" id="playbackChevron"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,5 8,11 13,5"/></svg></span>
   </div>
   <div class="section-body" id="playbackBody">
 
     <!-- Now playing: horizontal current + next -->
-    <div class="now-playing" id="nowPlaying">
+    <div class="now-playing" id="nowPlaying"
+         onpointerdown="npPointerDown(event)"
+         onpointerup="npPointerUp(event)"
+         onpointerleave="npPointerUp(event)"
+         onpointercancel="npPointerUp(event)">
       <div class="np-label">Now playing</div>
       <div class="np-row">
         <div class="np-current">
@@ -294,6 +301,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
       <!-- Mini staff notation: current bar + next bar, up to 3 parts -->
       <div class="np-staff-wrap" id="npStaffWrap" style="display:none"></div>
+      <div class="np-tap-hint" id="npTapHint">Tap to hear · hold to sustain</div>
     </div>
 
     <div class="status-line" id="statusLine">Select a voice part above, then press play.</div>
@@ -302,7 +310,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="btn btn-primary"   id="btnPlay"  onclick="playAll()"     disabled>▶ Play all</button>
       <button class="btn btn-pause"     id="btnPause" onclick="togglePause()" style="display:none">⏸ Pause</button>
       <button class="btn btn-stop"      id="btnStop"  onclick="stopAll()"     style="display:none">⏹ Stop</button>
-      <button class="btn btn-hold"      id="btnHold"  onclick="toggleHold()"  disabled>𝄽 Hold note</button>
       <button class="btn btn-secondary" id="btnLoop"  onclick="toggleLoop()">🔁 Loop range</button>
       <button class="btn btn-secondary" id="btnMetro" onclick="toggleMetro()">🥁 Metronome</button>
     </div>
@@ -325,7 +332,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div style="margin-top:1.25rem">
       <div class="settings-toggle open" id="settingsToggle" onclick="toggleSettings()">
         <span class="settings-toggle-label">⚙️ Settings</span>
-        <span class="settings-chevron" id="settingsChevron">▾</span>
+        <span class="settings-chevron" id="settingsChevron"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,5 8,11 13,5"/></svg></span>
       </div>
       <div class="settings-inner" id="settingsInner">
         <div class="settings-grid">
@@ -385,7 +392,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 // ─── State ────────────────────────────────────────────────────────────────────
 let score=null, selectedParts=new Set(), checkedMeasures=new Set();
 let isLooping=false, metroOn=false, stopFlag=false, pauseFlag=false;
-let isHolding=false, holdOscNodes=[];
+let holdOscNodes=[];
 let audioCtx=null, BPM=120, VOL=0.75, TONE='organ';
 let playbackPos={mi:0,ni:0,resumeNi:0};
 
@@ -560,7 +567,6 @@ const STAFF_TOP    = 18;   // y of top staff line (ledger + lyric-above headroom
 const STAFF_H      = (STAFF_LINES-1)*LINE_GAP; // 32px
 const STAFF_BOTTOM = STAFF_TOP + STAFF_H;       // 50
 const CLEF_W       = 22;
-const BAR_DIV_X    = 0.52; // fraction of viewBox width for bar line
 
 // Treble: bottom line = E4 (MIDI 64). Bass: bottom line = G2 (MIDI 43).
 // Sanity: skip notes outside realistic vocal range
@@ -642,116 +648,104 @@ function ledgerLines(x, y){
   return lines.join('');
 }
 
-function renderStaffSVG(partIdx, currentMi, nextMi, playheadNoteIdx, isMobile){
+function renderStaffSVG(partIdx, currentMi, numBars, playheadNoteIdx, isMobile){
   const part=score.parts[partIdx];
   if(!part)return'';
   const bass=useBassClef(partIdx);
   const W=isMobile?360:560;
-  const barDivX=Math.round(W*BAR_DIV_X);
-  const usableW_cur=barDivX-CLEF_W-8;
-  const usableW_next=W-barDivX-8;
+  const sectionW=Math.floor((W-CLEF_W)/numBars);
 
   function notesForBar(mi){
     if(mi<0||mi>=part.measures.length)return[];
     return part.measures[mi].notes.filter(n=>{
       if(n.rest)return false;
       const m=midiFromFreq(n.freq);
-      return m>=MIDI_MIN&&m<=MIDI_MAX; // sanity clamp
+      return m>=MIDI_MIN&&m<=MIDI_MAX;
     });
   }
 
-  const curNotes=notesForBar(currentMi);
-  const nxtNotes=notesForBar(nextMi);
-  const allNotes=[...curNotes,...nxtNotes];
+  // Collect all notes across all bars for Y range
+  const allBarNotes=[];
+  for(let b=0;b<numBars;b++) allBarNotes.push(...notesForBar(currentMi+b));
 
-  // ── Compute Y extremes across both bars ──────────────────────────────────
-  let lowestNoteY  = STAFF_BOTTOM; // highest y value = lowest pitch
-  let highestNoteY = STAFF_TOP;    // lowest y value  = highest pitch
-  allNotes.forEach(n=>{
+  let lowestNoteY=STAFF_BOTTOM, highestNoteY=STAFF_TOP;
+  allBarNotes.forEach(n=>{
     const y=midiToStaffY(midiFromFreq(n.freq),bass);
-    if(y>lowestNoteY)  lowestNoteY=y;
-    if(y<highestNoteY) highestNoteY=y;
+    if(y>lowestNoteY)lowestNoteY=y;
+    if(y<highestNoteY)highestNoteY=y;
   });
 
-  // ── Lyric Y and total SVG height ─────────────────────────────────────────
-  // Bass clef: lyrics above staff (never clashes with low notes below staff)
-  // Treble clef: lyrics below staff, pushed down if notes need ledger room
-  let lyricY, svgH, lyricAbove;
+  let lyricY, finalSvgH, lyricAbove;
   if(bass){
-    lyricAbove = true;
-    // Text sits just above STAFF_TOP; need headroom above for it + any high ledgers
-    lyricY   = Math.min(STAFF_TOP-5, highestNoteY-14);
-    // SVG height: staff bottom + ledger room below + a small margin
-    svgH = Math.max(STAFF_BOTTOM+20, lowestNoteY+14);
+    lyricAbove=true;
+    lyricY=Math.min(STAFF_TOP-5,highestNoteY-14);
+    finalSvgH=Math.max(STAFF_BOTTOM+20,lowestNoteY+14);
   }else{
-    lyricAbove = false;
-    // Dynamic: push lyric below the lowest notehead (including ledger lines)
-    lyricY = Math.max(STAFF_BOTTOM+18, lowestNoteY+14);
-    svgH   = lyricY+14;
+    lyricAbove=false;
+    lyricY=Math.max(STAFF_BOTTOM+18,lowestNoteY+14);
+    finalSvgH=lyricY+14;
   }
-  // Ensure STAFF_TOP headroom: if lyrics-above part has high ledgers, extend top
-  const svgTopPad = lyricAbove ? Math.max(0, STAFF_TOP - lyricY - 2) : 0;
-  // We keep a fixed viewBox origin at 0; lyricY may go negative for bass — clamp to 8
-  const safeLyricY = Math.max(8, lyricY);
-  // Adjust SVG height upward if bass lyric would be cut off
-  const finalSvgH = lyricAbove ? Math.max(svgH, STAFF_BOTTOM+14) : svgH;
+  const safeLyricY=Math.max(8,lyricY);
+  if(lyricAbove) finalSvgH=Math.max(finalSvgH,STAFF_BOTTOM+14);
+  const barLabelY=lyricAbove?STAFF_BOTTOM+10:STAFF_TOP-4;
+  const fontSize=isMobile?7:9;
 
-  // ── Layout notes ─────────────────────────────────────────────────────────
-  function layoutNotes(notes, startX, usableW, opacity){
+  function layoutBarNotes(notes,startX,usableW,opacity){
     if(!notes.length)return{svg:'',xPositions:[]};
-    const slot=Math.max(18, Math.min(38, Math.floor(usableW/notes.length)));
-    const svgParts=[], xPositions=[];
+    const slot=Math.max(12,Math.min(36,Math.floor(usableW/notes.length)));
+    const svgParts=[],xPositions=[];
     notes.forEach((n,i)=>{
       const x=startX+slot*i+slot/2;
       xPositions.push(x);
       const midi=midiFromFreq(n.freq);
       const y=midiToStaffY(midi,bass);
       const acc=getAccidental(midi);
-      if(acc) svgParts.push(`<text x="${x-10}" y="${y+4}" font-size="11" fill="#667eea" opacity="${opacity}">♯</text>`);
+      if(acc) svgParts.push(`<text x="${x-10}" y="${y+4}" font-size="10" fill="#667eea" opacity="${opacity}">♯</text>`);
       svgParts.push(ledgerLines(x,y));
       svgParts.push(`<g opacity="${opacity}">${noteHeadPath(x,y,n.beats)}</g>`);
       if(n.lyric){
         const lyr=n.lyric.length>6?n.lyric.slice(0,5)+'…':n.lyric;
-        svgParts.push(`<text x="${x}" y="${safeLyricY}" font-size="${isMobile?8:9}" text-anchor="middle" fill="#555" opacity="${opacity}" font-family="-apple-system,sans-serif">${lyr}</text>`);
+        svgParts.push(`<text x="${x}" y="${safeLyricY}" font-size="${fontSize}" text-anchor="middle" fill="#555" opacity="${opacity}" font-family="-apple-system,sans-serif">${lyr}</text>`);
       }
     });
     return{svg:svgParts.join(''),xPositions};
   }
 
-  const {svg:curSvg, xPositions:curX}=layoutNotes(curNotes, CLEF_W+4, usableW_cur, 1.0);
-  const {svg:nxtSvg}=layoutNotes(nxtNotes, barDivX+6, usableW_next, 0.7);
-
-  // Staff lines
   const staffLines=Array.from({length:STAFF_LINES},(_,i)=>{
     const y=STAFF_TOP+i*LINE_GAP;
     return`<line x1="${CLEF_W}" y1="${y}" x2="${W}" y2="${y}" stroke="#c8cef5" stroke-width="1"/>`;
   }).join('');
 
-  // Bar division line
-  const barLine=`<line x1="${barDivX}" y1="${STAFF_TOP}" x2="${barDivX}" y2="${STAFF_BOTTOM}" stroke="#9090c0" stroke-width="1.2"/>`;
+  let allNotesSvg='',barLinesSvg='',barLabelsSvg='',curX=[];
+  for(let b=0;b<numBars;b++){
+    const mi=currentMi+b;
+    const secStartX=CLEF_W+b*sectionW;
+    const opacity=b===0?1.0:Math.max(0.35,0.7-(b-1)*0.12);
+    const notes=notesForBar(mi);
+    const {svg:barSvg,xPositions}=layoutBarNotes(notes,secStartX+3,sectionW-6,opacity);
+    if(b===0) curX=xPositions;
+    allNotesSvg+=barSvg;
+    if(b>0){
+      const bx=CLEF_W+b*sectionW;
+      barLinesSvg+=`<line x1="${bx}" y1="${STAFF_TOP}" x2="${bx}" y2="${STAFF_BOTTOM}" stroke="#c8cef5" stroke-width="1"/>`;
+    }
+    if(mi>=0&&mi<part.measures.length){
+      barLabelsSvg+=`<text x="${secStartX+4}" y="${barLabelY}" font-size="8" fill="${b===0?'#aaa':'#ccc'}" opacity="${b===0?1:0.5}" font-family="-apple-system,sans-serif">Bar ${part.measures[mi].number}</text>`;
+    }
+  }
 
-  // Playhead
   let playhead='';
-  if(playheadNoteIdx!==null && curX && curX[playheadNoteIdx]!==undefined){
+  if(playheadNoteIdx!==null&&curX&&curX[playheadNoteIdx]!==undefined){
     const px=curX[playheadNoteIdx];
     playhead=`<line x1="${px}" y1="${STAFF_TOP-4}" x2="${px}" y2="${STAFF_BOTTOM+4}" stroke="#667eea" stroke-width="1.5" stroke-dasharray="3,2" opacity="0.7"/>
               <circle cx="${px}" cy="${STAFF_TOP-8}" r="3" fill="#667eea" opacity="0.7"/>`;
   }
 
-  // Bar number labels — placed to avoid colliding with lyrics-above
-  const barLabelY = lyricAbove ? STAFF_BOTTOM+10 : STAFF_TOP-4;
-  const curBarNum = currentMi>=0&&part.measures[currentMi]
-    ? `<text x="${CLEF_W+4}" y="${barLabelY}" font-size="8" fill="#aaa" font-family="-apple-system,sans-serif">Bar ${part.measures[currentMi].number}</text>` : '';
-  const nxtBarNum = nextMi>=0&&part.measures[nextMi]
-    ? `<text x="${barDivX+4}" y="${barLabelY}" font-size="8" fill="#ccc" font-family="-apple-system,sans-serif">Bar ${part.measures[nextMi].number}</text>` : '';
-
   return`<svg viewBox="0 0 ${W} ${finalSvgH}" preserveAspectRatio="xMinYMid meet">
-    ${staffLines}
-    ${barLine}
+    ${staffLines}${barLinesSvg}
     ${drawClef(bass)}
-    ${curBarNum}${nxtBarNum}
-    ${curSvg}
-    ${nxtSvg}
+    ${barLabelsSvg}
+    ${allNotesSvg}
     ${playhead}
   </svg>`;
 }
@@ -765,12 +759,14 @@ function updateStaffDisplay(mi, ni){
   const wrap=document.getElementById('npStaffWrap');
   if(!wrap||!score||!selectedParts.size)return;
   wrap.style.display='block';
-  const isMobile=window.innerWidth<500;
+  const w=window.innerWidth;
+  const isMobile=w<500;
+  const numBars=w>=700?4:2;
   const parts=[...selectedParts].slice(0,3);
   wrap.innerHTML=parts.map(pi=>{
     const part=score.parts[pi];
     if(!part)return'';
-    const svgStr=renderStaffSVG(pi, mi, mi+1, ni, isMobile);
+    const svgStr=renderStaffSVG(pi,mi,numBars,ni,isMobile);
     return`<div class="staff-row">
       <div class="staff-part-label">${part.name}</div>
       <div class="staff-svg-wrap">${svgStr}</div>
@@ -966,7 +962,6 @@ function togglePart(idx,checked){
   document.querySelectorAll('.voice-chip').forEach(c=>c.classList.toggle('active',selectedParts.has(parseInt(c.dataset.idx))));
   const has=selectedParts.size>0;
   document.getElementById('btnPlay').disabled=!has;
-  document.getElementById('btnHold').disabled=!has;
   stopAll();
   if(has){
     renderMeasures();
@@ -1202,32 +1197,72 @@ function togglePause(){
   }
 }
 
-function toggleHold(){
+// ─── Tap-to-hear on now-playing ───────────────────────────────────────────────
+// pointerdown → start sustaining current note(s)
+// pointerup / pointerleave → stop
+// Works whether playback is running (pauses loop) or stopped
+
+let npHoldActive=false;
+
+function npPointerDown(e){
   if(!score||!selectedParts.size)return;
-  if(isHolding){stopHoldNodes();isHolding=false;document.getElementById('btnHold').classList.remove('holding');document.getElementById('btnHold').textContent='𝄽 Hold note';setStatus('Hold released.');return;}
+  // Don't interfere with clicking inside the staff SVG text/buttons
+  e.preventDefault();
+  npHoldActive=true;
+
+  const mi=playbackPos.mi??0, ni=playbackPos.ni??0;
   const fp=score.parts[Array.from(selectedParts)[0]];
-  const mi=playbackPos.mi??0,ni=playbackPos.ni??0;
-  const measure=fp.measures[mi];
-  let tFreq=null,tLabel=null,tLyric=null;
-  if(measure){for(let i=ni;i<measure.notes.length;i++){const n=measure.notes[i];if(!n.rest){tFreq=n.freq;tLabel=n.label;tLyric=n.lyric;break;}}if(!tFreq){const fn=measure.notes.find(n=>!n.rest);if(fn){tFreq=fn.freq;tLabel=fn.label;tLyric=fn.lyric;}}}
-  if(!tFreq){setStatus('No note to hold at current position.');return;}
-  selectedParts.forEach(pi=>{const m=score.parts[pi]?.measures[mi];if(!m)return;let n=m.notes[ni];if(!n||n.rest)n=m.notes.find(nn=>!nn.rest);if(!n||n.rest)return;const freqs=n.chord||[n.freq];freqs.forEach(f=>{holdOscNodes.push(...playFreqSustained(f));});});
-  isHolding=true;document.getElementById('btnHold').classList.add('holding');document.getElementById('btnHold').textContent='⏹ Release hold';
-  document.getElementById('npNote').textContent=tLyric||tLabel||'—';
-  document.getElementById('npSub').textContent=tLyric?tLabel:'';
-  document.getElementById('npCtx').textContent='Bar '+(measure?.number||'—')+' · held';
-  document.getElementById('nowPlaying').classList.add('show');
-  setStatus('𝄽 Holding note — press Release to stop');
+  const measure=fp?.measures[mi];
+  if(!measure)return;
+
+  // Pause the playback loop so it doesn't keep advancing
+  if(!pauseFlag){
+    pauseFlag=true;
+    stopMetronome();
+    if(audioCtx&&audioCtx.state==='running') audioCtx.suspend();
+  }
+
+  // Small delay so AudioContext suspension completes, then start held notes
+  setTimeout(()=>{
+    if(!npHoldActive)return;
+    if(audioCtx) audioCtx.resume();
+    stopHoldNodes(); // clear any previous hold
+    selectedParts.forEach(pi=>{
+      const m=score.parts[pi]?.measures[mi];
+      if(!m)return;
+      let n=m.notes[ni];
+      if(!n||n.rest) n=m.notes.find(nn=>!nn.rest);
+      if(!n||n.rest)return;
+      (n.chord||[n.freq]).forEach(f=>holdOscNodes.push(...playFreqSustained(f)));
+    });
+  }, audioCtx&&audioCtx.state==='running'?0:60);
+
+  document.getElementById('nowPlaying').classList.add('is-holding');
+  document.getElementById('npTapHint').textContent='Holding… release to continue';
+}
+
+function npPointerUp(e){
+  if(!npHoldActive)return;
+  npHoldActive=false;
+  stopHoldNodes();
+  document.getElementById('nowPlaying').classList.remove('is-holding');
+  document.getElementById('npTapHint').textContent='Tap to hear · hold to sustain';
+
+  // Only resume the loop if playback was actually running (Stop button visible)
+  const wasPlaying=document.getElementById('btnStop').style.display!=='none';
+  if(wasPlaying&&pauseFlag){
+    pauseFlag=false;
+    if(audioCtx) audioCtx.resume();
+    if(metroOn){metroBeatsPerBar=score?.beats||4;startMetronome();}
+  }
 }
 
 function stopAll(){
   stopFlag=true;pauseFlag=false;isLooping=false;
-  stopMetronome();stopHoldNodes();isHolding=false;
+  stopMetronome();stopHoldNodes();npHoldActive=false;
   if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
   document.getElementById('btnLoop').classList.remove('btn-active');
   document.getElementById('loopRow').classList.remove('show');
-  document.getElementById('btnHold').classList.remove('holding');
-  document.getElementById('btnHold').textContent='𝄽 Hold note';
   showPlayState('stopped');hlMeasure(null);
   resetStaffDisplay();
 }
