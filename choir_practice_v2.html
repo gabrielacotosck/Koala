@@ -200,7 +200,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <body>
 <div class="container">
 <div class="header">
-  <h1>🐨 Choir Practice Tool</h1>
+  <h1>🐨 Choir Practice Tool v2.1</h1>
   <p>Load your score and practise your voice part — everything stays on your device</p>
   <div class="format-pills">
     <span class="format-pill hi">🎼 .mscz (MuseScore)</span>
@@ -1198,44 +1198,38 @@ function togglePause(){
 }
 
 // ─── Tap-to-hear on now-playing ───────────────────────────────────────────────
-// pointerdown → start sustaining current note(s)
-// pointerup / pointerleave → stop
-// Works whether playback is running (pauses loop) or stopped
-
 let npHoldActive=false;
+let npHoldPausedPlayback=false; // did we set pauseFlag ourselves?
 
 function npPointerDown(e){
   if(!score||!selectedParts.size)return;
-  // Don't interfere with clicking inside the staff SVG text/buttons
   e.preventDefault();
+  e.stopPropagation();
   npHoldActive=true;
 
   const mi=playbackPos.mi??0, ni=playbackPos.ni??0;
-  const fp=score.parts[Array.from(selectedParts)[0]];
-  const measure=fp?.measures[mi];
-  if(!measure)return;
 
-  // Pause the playback loop so it doesn't keep advancing
-  if(!pauseFlag){
+  // Freeze playback loop only if it's currently running (not already paused)
+  const isPlaying=document.getElementById('btnStop').style.display!=='none';
+  if(isPlaying&&!pauseFlag){
     pauseFlag=true;
+    npHoldPausedPlayback=true;
     stopMetronome();
-    if(audioCtx&&audioCtx.state==='running') audioCtx.suspend();
+  }else{
+    npHoldPausedPlayback=false;
   }
 
-  // Small delay so AudioContext suspension completes, then start held notes
-  setTimeout(()=>{
-    if(!npHoldActive)return;
-    if(audioCtx) audioCtx.resume();
-    stopHoldNodes(); // clear any previous hold
-    selectedParts.forEach(pi=>{
-      const m=score.parts[pi]?.measures[mi];
-      if(!m)return;
-      let n=m.notes[ni];
-      if(!n||n.rest) n=m.notes.find(nn=>!nn.rest);
-      if(!n||n.rest)return;
-      (n.chord||[n.freq]).forEach(f=>holdOscNodes.push(...playFreqSustained(f)));
-    });
-  }, audioCtx&&audioCtx.state==='running'?0:60);
+  // Make sure AudioContext is running so our held notes play
+  getAudio();
+  stopHoldNodes();
+  selectedParts.forEach(pi=>{
+    const m=score.parts[pi]?.measures[mi];
+    if(!m)return;
+    let n=m.notes[ni];
+    if(!n||n.rest) n=m.notes.find(nn=>!nn.rest);
+    if(!n||n.rest)return;
+    (n.chord||[n.freq]).forEach(f=>holdOscNodes.push(...playFreqSustained(f)));
+  });
 
   document.getElementById('nowPlaying').classList.add('is-holding');
   document.getElementById('npTapHint').textContent='Holding… release to continue';
@@ -1248,18 +1242,20 @@ function npPointerUp(e){
   document.getElementById('nowPlaying').classList.remove('is-holding');
   document.getElementById('npTapHint').textContent='Tap to hear · hold to sustain';
 
-  // Only resume the loop if playback was actually running (Stop button visible)
-  const wasPlaying=document.getElementById('btnStop').style.display!=='none';
-  if(wasPlaying&&pauseFlag){
-    pauseFlag=false;
-    if(audioCtx) audioCtx.resume();
-    if(metroOn){metroBeatsPerBar=score?.beats||4;startMetronome();}
+  // Only un-pause if we were the ones who paused — and restore to paused state,
+  // not to playing. The user must press Resume themselves to continue playback.
+  if(npHoldPausedPlayback){
+    npHoldPausedPlayback=false;
+    // Leave pauseFlag=true so playback loop stays frozen.
+    // The Pause button already shows "▶ Resume" — user taps that to continue.
+    // Just ensure AudioContext is running so future interactions work.
+    if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume();
   }
 }
 
 function stopAll(){
   stopFlag=true;pauseFlag=false;isLooping=false;
-  stopMetronome();stopHoldNodes();npHoldActive=false;
+  stopMetronome();stopHoldNodes();npHoldActive=false;npHoldPausedPlayback=false;
   if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
   document.getElementById('btnLoop').classList.remove('btn-active');
   document.getElementById('loopRow').classList.remove('show');
